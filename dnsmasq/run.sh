@@ -4,7 +4,6 @@
 bashio::log.level "$(bashio::config 'log_level')"
 
 CLEANED_UP=false
-declare DNSMASQ_PID
 # SIGTERM-handler this funciton will be executed when the container receives the SIGTERM signal (when stopping)
 term_handler(){
     if $CLEANED_UP; then
@@ -13,9 +12,7 @@ term_handler(){
     CLEANED_UP=true
 	bashio::log.warning "Stopping addon"
     bashio::log.warning "cleanup"
-    if [[ -n ${DNSMASQ_PID} ]];then
-    kill ${DNSMASQ_PID}
-    fi
+    killall dnsmasq 2>/dev/null || true
 
 	exit 0
 }
@@ -70,7 +67,6 @@ fi
 
 bashio::log.info "## Starting dnsmasq daemon"
 dnsmasq -C /dnsmasq.conf
-DNSMASQ_PID=$!
 
 bashio::log.info "setup finished, sleep till the end of the world ....."
 sleep infinity &
