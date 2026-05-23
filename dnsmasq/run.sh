@@ -1,8 +1,9 @@
 #!/usr/bin/with-contenv bashio
 # shellcheck shell=bash
 
-bashio::log.level "$(bashio::config 'log_level')"
-
+LOG_LVL="$(bashio::config 'log_level')"
+bashio::log.level "${LOG_LVL}
+"
 CLEANED_UP=false
 # SIGTERM-handler this funciton will be executed when the container receives the SIGTERM signal (when stopping)
 term_handler(){
@@ -67,7 +68,7 @@ fi
 
 bashio::log.info "## Starting dnsmasq daemon"
 
-if [[ $(bashio::log.level) == "debug" ]];then
+if [[ "${LOG_LVL}" == "debug" ]];then
 dnsmasq --no-daemon --log-queries -C /dnsmasq.conf
 else
 dnsmasq -C /dnsmasq.conf
