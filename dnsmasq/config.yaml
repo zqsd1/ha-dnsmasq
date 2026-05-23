@@ -13,7 +13,5 @@ host_dbus: true
 privileged:
   - NET_ADMIN
 init: false
-options:
 
-schema:
   
