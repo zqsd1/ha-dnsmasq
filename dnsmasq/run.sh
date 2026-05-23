@@ -15,6 +15,8 @@ term_handler(){
     bashio::log.warning "cleanup"
     killall dnsmasq 2>/dev/null || true
 
+    nmcli con delete "$CONN_NAME"
+
 	exit 0
 }
 
@@ -55,6 +57,34 @@ dry_run(){
 #         $(( bits & 0xff ))
 # }
 
+IP_CIDR="$(bashio::config 'ip_cidr')"
+CHANNEL=6
+CONN_NAME=MatterAP-addon
+SSID="$(bashio::config 'ssid')"
+PASS="$(bashio::config 'password')"
+IFACE=wlan0
+HIDDEN=no
+
+nmcli_setup(){
+        nmcli con delete "$CONN_NAME"
+    	nmcli connection add type wifi ifname "$IFACE" con-name "$CONN_NAME" autoconnect yes ssid "$SSID" \
+		802-11-wireless.mode ap \
+		802-11-wireless.band bg \
+		802-11-wireless.channel "$CHANNEL" \
+		802-11-wireless.hidden "$HIDDEN" \
+        802-11-wireless.powersave 2 \
+		wifi-sec.key-mgmt wpa-psk \
+		wifi-sec.psk "$PASS" \
+		wifi-sec.proto rsn \
+		wifi-sec.pairwise ccmp \
+		wifi-sec.group ccmp \
+        ipv4.method manual \
+        ipv4.addresses "$IP_CIDR" \
+        ipv4.never-default yes \
+        ipv6.method manual \
+        ipv6.addresses fd44:44::1/64 \
+        ipv6.never-default yes 
+}
 
 
 bashio::log.info "Starting addon"
@@ -65,6 +95,9 @@ trap 'term_handler' EXIT
 if bashio::config.true 'dry_run';then
     dry_run
 fi
+
+bashio::log.info "## setup nmcli"
+nmcli_setup
 
 bashio::log.info "## Starting dnsmasq daemon"
 

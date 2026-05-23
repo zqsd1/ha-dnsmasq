@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.] 2026-05-23
+and going back again with nmcli because nmcli fail on reboot on the host
+it rebuild the connection created with client mode and change its name
+
 ## [0.1.4] 2026-05-23
 activate logs for dnsmasq in debug
 

@@ -7,6 +7,8 @@ ENV LANG=C.UTF-8
 
 RUN apk update && \
     apk add --no-cache \
+        networkmanager \
+        networkmanager-cli \
         dnsmasq  &&\
     rm -rf /var/cache/apk/*
 
