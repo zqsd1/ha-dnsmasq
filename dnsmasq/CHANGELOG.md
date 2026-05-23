@@ -1,6 +1,9 @@
 # Changelog
 
-## [0.1.] 2026-05-23
+## [0.1.6] 2026-05-23
+added option to hide ssid
+
+## [0.1.5] 2026-05-23
 and going back again with nmcli because nmcli fail on reboot on the host
 it rebuild the connection created with client mode and change its name
 

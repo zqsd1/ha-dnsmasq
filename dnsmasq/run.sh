@@ -62,8 +62,9 @@ CHANNEL=6
 CONN_NAME=MatterAP-addon
 SSID="$(bashio::config 'ssid')"
 PASS="$(bashio::config 'password')"
-IFACE=wlan0
-HIDDEN=no
+IFACE="$(bashio::config 'interface')"
+HIDDEN="$(bashio::config 'hidden' false)"
+DRY_RUN="$(bashio::config 'dry_run' false)"
 
 nmcli_setup(){
         nmcli connection delete $CONN_NAME 2>/dev/null || true
@@ -101,7 +102,7 @@ nmcli_setup
 
 bashio::log.info "## Starting dnsmasq daemon"
 sleep 5
-if [[ "${LOG_LVL}" == "debug" ]];then
+if bashio::debug ;then
 dnsmasq --no-daemon --log-queries -C /dnsmasq.conf
 else
 dnsmasq -C /dnsmasq.conf

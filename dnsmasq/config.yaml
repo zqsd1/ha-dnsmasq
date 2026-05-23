@@ -1,6 +1,6 @@
 ---
 name: dnsmasq by zqsd
-version: 0.1.5
+version: 0.1.6
 slug: dnsmasq.zqsd
 description: dnsmasq server because official one doesnt fit me
 arch: [armhf, armv7, aarch64, amd64, i386]
@@ -20,9 +20,13 @@ options:
   ssid:
   password:
   ip_cidr: 192.168.99.1/24
+  interface: wlan0
+  hidden: false
 schema:
   dry_run: bool
   log_level: list(trace|debug|info|notice|warning|error|fatal)?
   ssid: match(^.{2,32}$)
   password: password
   ip_cidr: str
+  interface: str
+  hidden: bool
