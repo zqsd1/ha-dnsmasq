@@ -63,7 +63,11 @@ CONN_NAME=MatterAP-addon
 SSID="$(bashio::config 'ssid')"
 PASS="$(bashio::config 'password')"
 IFACE="$(bashio::config 'interface')"
-HIDDEN="$(bashio::config 'hidden' false)"
+if bashio::config.true 'hidden'; then
+    HIDDEN=yes
+else
+    HIDDEN=no
+fi
 DRY_RUN="$(bashio::config 'dry_run' false)"
 
 nmcli_setup(){
