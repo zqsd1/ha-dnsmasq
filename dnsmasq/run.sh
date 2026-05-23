@@ -15,7 +15,7 @@ term_handler(){
     bashio::log.warning "cleanup"
     killall dnsmasq 2>/dev/null || true
 
-    nmcli con delete "$CONN_NAME"
+    	nmcli connection delete $CONN_NAME 2>/dev/null || true
 
 	exit 0
 }
@@ -66,7 +66,7 @@ IFACE=wlan0
 HIDDEN=no
 
 nmcli_setup(){
-        nmcli con delete "$CONN_NAME"
+        nmcli connection delete $CONN_NAME 2>/dev/null || true
     	nmcli connection add type wifi ifname "$IFACE" con-name "$CONN_NAME" autoconnect yes ssid "$SSID" \
 		802-11-wireless.mode ap \
 		802-11-wireless.band bg \
