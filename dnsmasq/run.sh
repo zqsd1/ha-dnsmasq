@@ -100,7 +100,7 @@ bashio::log.info "## setup nmcli"
 nmcli_setup
 
 bashio::log.info "## Starting dnsmasq daemon"
-
+sleep 5
 if [[ "${LOG_LVL}" == "debug" ]];then
 dnsmasq --no-daemon --log-queries -C /dnsmasq.conf
 else
