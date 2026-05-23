@@ -11,7 +11,7 @@ term_handler(){
         return
     fi
     CLEANED_UP=true
-	bashio::log.warning "Stopping Hass.io Access Point"
+	bashio::log.warning "Stopping addon"
     bashio::log.warning "cleanup"
     if [[ -n ${DNSMASQ_PID} ]];then
     kill ${DNSMASQ_PID}
@@ -59,7 +59,7 @@ dry_run(){
 
 
 
-bashio::log.info "Starting Hass.io Access Point Addon"
+bashio::log.info "Starting addon"
 # Setup signal handlers
 trap 'term_handler' SIGTERM
 trap 'term_handler' EXIT

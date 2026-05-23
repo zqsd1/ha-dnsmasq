@@ -4,7 +4,7 @@ version: 0.1.0
 slug: dnsmasq.zqsd
 description: dnsmasq server because official one doesnt fit me
 arch: [armhf, armv7, aarch64, amd64, i386]
-url: https://github.com/zqsd1/Hassio-Access-Point
+url: https://github.com/zqsd1/ha-dnsmasq
 startup: system
 boot: auto
 host_network: true
