@@ -7,7 +7,7 @@ ENV LANG=C.UTF-8
 
 RUN apk update && \
     apk add --no-cache \
-        dnsmasq \
+        dnsmasq  &&\
     rm -rf /var/cache/apk/*
 
 COPY dnsmasq.conf /
