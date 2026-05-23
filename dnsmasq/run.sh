@@ -66,8 +66,12 @@ if bashio::config.true 'dry_run';then
 fi
 
 bashio::log.info "## Starting dnsmasq daemon"
-dnsmasq -C /dnsmasq.conf
 
+if [[ $(bashio::log.level) == "debug" ]];then
+dnsmasq --no-daemon --log-queries -C /dnsmasq.conf
+else
+dnsmasq -C /dnsmasq.conf
+fi
 bashio::log.info "setup finished, sleep till the end of the world ....."
 sleep infinity &
 wait $!
