@@ -101,6 +101,12 @@ bashio::log.info "## setup nmcli"
 nmcli_setup
 
 bashio::log.info "## Starting dnsmasq daemon"
+
+if [[ $IFACE != "wlan0" ]];then
+bashio::log.info "## rename interface "
+	sed -i \
+		-e "s/wlan0/$IFACE/g" /dnsmasq.conf
+fi
 sleep 5
 if bashio::debug ;then
 dnsmasq --no-daemon --log-queries -C /dnsmasq.conf
