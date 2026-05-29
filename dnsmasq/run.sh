@@ -80,6 +80,8 @@ fi
 DRY_RUN="$(bashio::config 'dry_run' false)"
 
 nmcli_setup(){
+        # ipv4.never-default yes 
+        # ipv6.never-default yes 
         nmcli connection delete $CONN_NAME 2>/dev/null || true
     	nmcli connection add type wifi ifname "$IFACE" con-name "$CONN_NAME" autoconnect yes ssid "$SSID" \
 		802-11-wireless.mode ap \
@@ -94,10 +96,8 @@ nmcli_setup(){
 		wifi-sec.group ccmp \
         ipv4.method manual \
         ipv4.addresses "$IP_CIDR" \
-        # ipv4.never-default yes 
         ipv6.method manual \
         ipv6.addresses fd44:44::1/64 
-        # ipv6.never-default yes 
 }
 
 
