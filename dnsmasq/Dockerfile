@@ -14,7 +14,8 @@ RUN apk update && \
     apk add --no-cache \
     networkmanager \
     networkmanager-cli \
-    dnsmasq  &&\
+    dnsmasq \
+    nftables &&\
     rm -rf /var/cache/apk/*
 
 COPY dnsmasq.conf /
