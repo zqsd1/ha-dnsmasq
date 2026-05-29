@@ -96,7 +96,7 @@ nmcli_setup(){
         ipv4.addresses "$IP_CIDR" \
         # ipv4.never-default yes 
         ipv6.method manual \
-        ipv6.addresses fd44:44::1/64 \
+        ipv6.addresses fd44:44::1/64 
         # ipv6.never-default yes 
 }
 
