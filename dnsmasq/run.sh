@@ -139,5 +139,6 @@ else
 dnsmasq -C /dnsmasq.conf
 fi
 bashio::log.info "setup finished, sleep till the end of the world ....."
+tcpdump -i "$IFACE"
 sleep infinity &
 wait $!
