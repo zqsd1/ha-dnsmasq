@@ -94,10 +94,10 @@ nmcli_setup(){
 		wifi-sec.group ccmp \
         ipv4.method manual \
         ipv4.addresses "$IP_CIDR" \
-        ipv4.never-default yes \
+        # ipv4.never-default yes 
         ipv6.method manual \
         ipv6.addresses fd44:44::1/64 \
-        ipv6.never-default yes 
+        # ipv6.never-default yes 
 }
 
 
