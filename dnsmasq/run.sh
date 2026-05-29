@@ -4,6 +4,12 @@
 LOG_LVL="$(bashio::config 'log_level')"
 bashio::log.level "${LOG_LVL}
 "
+
+clean_nftables(){
+    nft delete table ip haap_zqsd 2>/dev/null || true
+    nft delete table inet filter_haap_zqsd 2>/dev/null || true
+
+}
 CLEANED_UP=false
 # SIGTERM-handler this funciton will be executed when the container receives the SIGTERM signal (when stopping)
 term_handler(){
@@ -15,11 +21,10 @@ term_handler(){
     bashio::log.warning "cleanup"
     killall dnsmasq 2>/dev/null || true
 
-    nft delete table ip haap_zqsd 2>/dev/null || true
-
+    clean_nftables
+   
     nmcli connection delete $CONN_NAME 2>/dev/null || true
     
-
 	exit 0
 }
 
@@ -66,6 +71,7 @@ CONN_NAME=MatterAP-addon
 SSID="$(bashio::config 'ssid')"
 PASS="$(bashio::config 'password')"
 IFACE="$(bashio::config 'interface')"
+WANFACE=end0
 if bashio::config.true 'hidden'; then
     HIDDEN=yes
 else
@@ -110,8 +116,11 @@ nmcli_setup
 
 if bashio::config.true 'enable_nftables';then
     bashio::log.info "## Starting nftables"
-
-    nft delete table ip haap_zqsd 2>/dev/null || true
+    clean_nftables
+    sed -i \
+		-e "s/wlan0/$IFACE/g" \
+        -e "s/end0/$WANFACE/g" \
+        /nftables.conf
     nft -f /nftables.conf
     nft list ruleset
 fi

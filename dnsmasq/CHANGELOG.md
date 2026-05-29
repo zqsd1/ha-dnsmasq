@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.9] 2026-05-29
+added table ip beacause masquerade not enough
+dns server=1.1.1.1 only allow resolve not accesswebsite
+try remove home.arpa by just home
+
 ## [0.1.8] 2026-05-29
 start implement nftables so i can set wan access
 
