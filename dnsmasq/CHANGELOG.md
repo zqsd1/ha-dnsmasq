@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.1.8] 2026-05-29
+start implement nftables so i can set wan access
+
 ## [0.1.7] 2026-05-23
 correctly hide ssid ?
 

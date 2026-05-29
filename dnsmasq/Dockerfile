@@ -12,12 +12,14 @@ ENV LANG=C.UTF-8
 
 RUN apk update && \
     apk add --no-cache \
-        networkmanager \
-        networkmanager-cli \
-        dnsmasq  &&\
+    networkmanager \
+    networkmanager-cli \
+    dnsmasq  &&\
     rm -rf /var/cache/apk/*
 
 COPY dnsmasq.conf /
+COPY nftables.conf /
+
 
 COPY run.sh /
 RUN chmod a+x /run.sh

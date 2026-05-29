@@ -15,7 +15,10 @@ term_handler(){
     bashio::log.warning "cleanup"
     killall dnsmasq 2>/dev/null || true
 
-    	nmcli connection delete $CONN_NAME 2>/dev/null || true
+    nft delete table ip haap_zqsd 2>/dev/null || true
+
+    nmcli connection delete $CONN_NAME 2>/dev/null || true
+    
 
 	exit 0
 }
@@ -103,6 +106,15 @@ fi
 
 bashio::log.info "## setup nmcli"
 nmcli_setup
+
+
+if bashio::config.true 'enable_nftables';then
+    bashio::log.info "## Starting nftables"
+
+    nft delete table ip haap_zqsd 2>/dev/null || true
+    nft -f /nftables.conf
+    nft list ruleset
+fi
 
 bashio::log.info "## Starting dnsmasq daemon"
 
