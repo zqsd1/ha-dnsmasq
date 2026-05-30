@@ -9,6 +9,10 @@ clean_nftables(){
     nft delete table ip haap_zqsd 2>/dev/null || true
     nft delete table inet filter_haap_zqsd 2>/dev/null || true
 
+    iptables-nft -t nat -D POSTROUTING -o "$WANFACE" -j MASQUERADE -m comment --comment "ap-addon-inet"
+    iptables-nft -D FORWARD -i "$IFACE" -o "$WANFACE" -j ACCEPT -m comment --comment "ap-addon-inet"
+    iptables-nft -D FORWARD -i "$WANFACE" -o "$IFACE" -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT -m comment --comment "ap-addon-inet"
+
 }
 CLEANED_UP=false
 # SIGTERM-handler this funciton will be executed when the container receives the SIGTERM signal (when stopping)
@@ -121,8 +125,11 @@ if bashio::config.true 'enable_nftables';then
 		-e "s/wlan0/$IFACE/g" \
         -e "s/end0/$WANFACE/g" \
         /nftables.conf
-    nft -f /nftables.conf
-    nft list ruleset
+    # nft -f /nftables.conf
+    # nft list ruleset
+    iptables-nft -t nat -A POSTROUTING -o "$WANFACE" -j MASQUERADE -m comment --comment "ap-addon-inet"
+    iptables-nft -A FORWARD -i "$IFACE" -o "$WANFACE" -j ACCEPT -m comment --comment "ap-addon-inet"
+    iptables-nft -A FORWARD -i "$WANFACE" -o "$IFACE" -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT -m comment --comment "ap-addon-inet"
 fi
 
 bashio::log.info "## Starting dnsmasq daemon"

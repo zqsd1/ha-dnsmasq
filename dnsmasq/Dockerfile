@@ -16,6 +16,7 @@ RUN apk update && \
     networkmanager-cli \
     dnsmasq \
     tcpdump \
+    iptables \
     nftables &&\
     rm -rf /var/cache/apk/*
 
