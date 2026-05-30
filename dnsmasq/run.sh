@@ -120,11 +120,11 @@ bashio::log.info "## setup nmcli"
 nmcli_setup
 
 is_masquerading_enabled() {
-    iptables-nft -t nat -C POSTROUTING -o $DEFAULT_ROUTE_INTERFACE -j MASQUERADE -m comment --comment "ap-addon-inet" 2>/dev/null
+    iptables-nft -t nat -C POSTROUTING -o "$WANFACE" -j MASQUERADE -m comment --comment "ap-addon-inet" 2>/dev/null
 }
 
 is_forwarding_enabled() {
-    iptables-nft -C FORWARD -i $INTERFACE -o $DEFAULT_ROUTE_INTERFACE -j ACCEPT -m comment --comment "ap-addon-inet" 2>/dev/null
+    iptables-nft -C FORWARD -i "$IFACE" -o "$WANFACE" -j ACCEPT -m comment --comment "ap-addon-inet" 2>/dev/null
 }
 
 if bashio::config.true 'enable_nftables';then
