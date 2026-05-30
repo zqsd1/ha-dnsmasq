@@ -87,6 +87,7 @@ fi
 DRY_RUN="$(bashio::config 'dry_run' false)"
 
 IPTABLE_NAME=ZQSD_DNSMASQ_TABLE
+DNS_SERVER="$(bashio::config 'dns_server')"
 
 nmcli_setup(){
         nmcli connection delete $CONN_NAME 2>/dev/null || true
@@ -175,9 +176,8 @@ unset_iptables(){
     # Remove all rules in our chain
     iptables -F $IPTABLE_NAME  2>/dev/null || true
 
-    # Delete the chain itself
-    iptables -X $IPTABLE_NAME  2>/dev/null || true
-    # iptables -D DOCKER-USER -s 192.168.99.0/24 -d 192.168.1.1 -j ACCEPT
+    # Delete the chain itself ##refuse to be deleted if still linked
+    iptables -X $IPTABLE_NAME  2>/dev/null || true 
 
     iptables -t nat -D POSTROUTING -s 192.168.99.0/24 -o "$WANFACE" -j MASQUERADE
 }
@@ -209,6 +209,7 @@ if bashio::config.true 'enable_dns';then
         sed -i \
             -e "s/wlan0/$IFACE/g" /dnsmasq.conf
     fi
+    echo "server=${DNS_SERVER}" >>/dnsmasq.conf
     sleep 5
     if bashio::debug ;then
         dnsmasq --no-daemon --log-queries -C /dnsmasq.conf

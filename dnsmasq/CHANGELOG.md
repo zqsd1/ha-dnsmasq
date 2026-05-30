@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.14] 2026-05-29
+allow change of dns server
+use default for ra advertising timings
+
 ## [0.1.13] 2026-05-29
 try deny access to other lan
 

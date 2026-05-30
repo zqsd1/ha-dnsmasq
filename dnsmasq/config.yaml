@@ -1,6 +1,6 @@
 ---
 name: dnsmasq by zqsd
-version: 0.1.13
+version: 0.1.14
 slug: dnsmasq.zqsd
 description: dnsmasq server because official one doesnt fit me
 arch: [armhf, armv7, aarch64, amd64, i386]
@@ -24,6 +24,7 @@ options:
   hidden: false
   enable_dns: false
   enable_nftables: false
+  dns_server: 1.1.1.1
 schema:
   dry_run: bool
   log_level: list(trace|debug|info|notice|warning|error|fatal)?
@@ -34,3 +35,4 @@ schema:
   hidden: bool
   enable_dns: bool
   enable_nftables: bool
+  dns_server: str
