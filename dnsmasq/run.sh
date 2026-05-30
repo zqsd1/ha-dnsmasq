@@ -158,7 +158,7 @@ unset_iptables(){
 
 if bashio::config.true 'enable_nftables';then
     bashio::log.info "## Starting nftables"
-    clean_nftables
+    # clean_nftables
     sed -i \
 		-e "s/wlan0/$IFACE/g" \
         -e "s/end0/$WANFACE/g" \
