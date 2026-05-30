@@ -86,8 +86,6 @@ fi
 DRY_RUN="$(bashio::config 'dry_run' false)"
 
 nmcli_setup(){
-        # ipv4.never-default yes 
-        # ipv6.never-default yes 
         nmcli connection delete $CONN_NAME 2>/dev/null || true
     	nmcli connection add type wifi ifname "$IFACE" con-name "$CONN_NAME" autoconnect yes ssid "$SSID" \
 		802-11-wireless.mode ap \
@@ -101,8 +99,10 @@ nmcli_setup(){
 		wifi-sec.pairwise ccmp \
 		wifi-sec.group ccmp \
         ipv4.method manual \
+        ipv4.never-default yes \
         ipv4.addresses "$IP_CIDR" \
         ipv6.method manual \
+        ipv6.never-default yes \
         ipv6.addresses fd44:44::1/64 
 }
 
@@ -136,7 +136,7 @@ if bashio::config.true 'enable_nftables';then
         /nftables.conf
     # nft -f /nftables.conf
     # nft list ruleset
-     if ! is_masquerading_enabled; then
+    if ! is_masquerading_enabled; then
         iptables-nft -t nat -A POSTROUTING -o "$WANFACE" -j MASQUERADE -m comment --comment "ap-addon-inet"
     fi
     if ! is_forwarding_enabled; then
@@ -145,18 +145,20 @@ if bashio::config.true 'enable_nftables';then
     fi
 fi
 
-bashio::log.info "## Starting dnsmasq daemon"
+if bashio::config.true 'enable_dns';then
+    bashio::log.info "## Starting dnsmasq daemon"
 
-if [[ $IFACE != "wlan0" ]];then
-bashio::log.info "## rename interface "
-	sed -i \
-		-e "s/wlan0/$IFACE/g" /dnsmasq.conf
-fi
-sleep 5
-if bashio::debug ;then
-dnsmasq --no-daemon --log-queries -C /dnsmasq.conf
-else
-dnsmasq -C /dnsmasq.conf
+    if [[ $IFACE != "wlan0" ]];then
+        bashio::log.info "## rename interface "
+        sed -i \
+            -e "s/wlan0/$IFACE/g" /dnsmasq.conf
+    fi
+    sleep 5
+    if bashio::debug ;then
+        dnsmasq --no-daemon --log-queries -C /dnsmasq.conf
+    else
+        dnsmasq -C /dnsmasq.conf
+    fi
 fi
 bashio::log.info "setup finished, sleep till the end of the world ....."
 # tcpdump -i "$IFACE"

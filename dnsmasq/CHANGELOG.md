@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.12] 2026-05-29
+nftables doesnt works,going back to iptables script
+add switch to turn off dnsmasq so i can use external adguard
+
 ## [0.1.11] 2026-05-29
 try new nftables setup
 

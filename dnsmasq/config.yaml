@@ -1,6 +1,6 @@
 ---
 name: dnsmasq by zqsd
-version: 0.1.11
+version: 0.1.12
 slug: dnsmasq.zqsd
 description: dnsmasq server because official one doesnt fit me
 arch: [armhf, armv7, aarch64, amd64, i386]
@@ -22,6 +22,7 @@ options:
   ip_cidr: 192.168.99.1/24
   interface: wlan0
   hidden: false
+  enable_dns: false
   enable_nftables: false
 schema:
   dry_run: bool
@@ -31,4 +32,5 @@ schema:
   ip_cidr: str
   interface: str
   hidden: bool
+  enable_dns: bool
   enable_nftables: bool
