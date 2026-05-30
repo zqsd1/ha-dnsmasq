@@ -209,7 +209,7 @@ if bashio::config.true 'enable_dns';then
         sed -i \
             -e "s/wlan0/$IFACE/g" /dnsmasq.conf
     fi
-    echo "server=${DNS_SERVER}" >>/dnsmasq.conf
+    printf "\n server=%s" "${DNS_SERVER}" >>/dnsmasq.conf
     sleep 5
     cat /dnsmasq.conf
     if bashio::debug ;then
