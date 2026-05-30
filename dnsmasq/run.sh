@@ -139,8 +139,8 @@ set_iptables(){
     iptables -F $IPTABLE_NAME 
 
     # Ensure DOCKER-USER jumps to our chain exactly once
-    # iptables -C DOCKER-USER -j $IPTABLE_NAME  2>/dev/null || \
-    # iptables -A DOCKER-USER -j $IPTABLE_NAME 
+    iptables -C DOCKER-USER -j $IPTABLE_NAME  2>/dev/null || \
+    iptables -A DOCKER-USER -j $IPTABLE_NAME 
 
     # Allow AP clients to reach the host itself
     # iptables -I DOCKER-USER 1 -s 192.168.99.0/24 -d 192.168.1.1 -j ACCEPT
@@ -170,7 +170,7 @@ set_iptables(){
 unset_iptables(){
 
     # Remove jump from DOCKER-USER
-    # iptables -D DOCKER-USER -j $IPTABLE_NAME  2>/dev/null || true
+    iptables -D DOCKER-USER -j $IPTABLE_NAME  2>/dev/null || true
 
     # Remove all rules in our chain
     iptables -F $IPTABLE_NAME  2>/dev/null || true
