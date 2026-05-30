@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.1.11] 2026-05-29
+try new nftables setup
+
 ## [0.1.9] 2026-05-29
 added table ip beacause masquerade not enough
 dns server=1.1.1.1 only allow resolve not accesswebsite
