@@ -211,6 +211,7 @@ if bashio::config.true 'enable_dns';then
     fi
     echo "server=${DNS_SERVER}" >>/dnsmasq.conf
     sleep 5
+    cat /dnsmasq.conf
     if bashio::debug ;then
         dnsmasq --no-daemon --log-queries -C /dnsmasq.conf
     else
