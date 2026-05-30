@@ -131,15 +131,25 @@ is_forwarding_enabled() {
 set_iptables(){
     # Allow AP clients to reach the host itself
     # iptables -I DOCKER-USER 1 -s 192.168.99.0/24 -d 192.168.1.1 -j ACCEPT
+    
+    # Block AP clients from reaching the main LAN
+    iptables -A DOCKER-USER \
+        -s 192.168.99.0/24 \
+        -d 192.168.1.0/24 \
+        -j DROP
 
-    # Block access to the rest of the LAN
-    iptables -I DOCKER-USER 2 -s 192.168.99.0/24 -d 192.168.1.0/24 -j DROP
+    # Allow AP clients to reach the Internet
+    iptables -A DOCKER-USER \
+        -i "$IFACE" \
+        -o "$WANFACE" \
+        -j ACCEPT
 
-    # Allow AP -> Internet forwarding
-    iptables -I DOCKER-USER 3 -i "$IFACE" -o "$WANFACE" -j ACCEPT
-
-    # Allow return traffic from Internet
-    iptables -I DOCKER-USER 4 -i "$WANFACE" -o "$IFACE" -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+    # Allow return traffic
+    iptables -A DOCKER-USER \
+        -i "$WANFACE" \
+        -o "$IFACE" \
+        -m conntrack --ctstate RELATED,ESTABLISHED \
+        -j ACCEPT
 
     # NAT AP clients to the Internet
     iptables -t nat -A POSTROUTING -s 192.168.99.0/24 -o "$WANFACE" -j MASQUERADE
