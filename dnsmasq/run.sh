@@ -86,6 +86,8 @@ else
 fi
 DRY_RUN="$(bashio::config 'dry_run' false)"
 
+IPTABLE_NAME=ZQSD_DNSMASQ_TABLE
+
 nmcli_setup(){
         nmcli connection delete $CONN_NAME 2>/dev/null || true
     	nmcli connection add type wifi ifname "$IFACE" con-name "$CONN_NAME" autoconnect yes ssid "$SSID" \
@@ -129,23 +131,34 @@ is_forwarding_enabled() {
 }
 
 set_iptables(){
+
+    # Create chain if it doesn't exist
+    iptables -N $IPTABLE_NAME  2>/dev/null || true
+
+    # Clear only our chain
+    iptables -F $IPTABLE_NAME 
+
+    # Ensure DOCKER-USER jumps to our chain exactly once
+    # iptables -C DOCKER-USER -j $IPTABLE_NAME  2>/dev/null || \
+    # iptables -A DOCKER-USER -j $IPTABLE_NAME 
+
     # Allow AP clients to reach the host itself
     # iptables -I DOCKER-USER 1 -s 192.168.99.0/24 -d 192.168.1.1 -j ACCEPT
     
     # Block AP clients from reaching the main LAN
-    iptables -A DOCKER-USER \
+    iptables -A $IPTABLE_NAME  \
         -s 192.168.99.0/24 \
         -d 192.168.1.0/24 \
         -j DROP
 
     # Allow AP clients to reach the Internet
-    iptables -A DOCKER-USER \
+    iptables -A $IPTABLE_NAME  \
         -i "$IFACE" \
         -o "$WANFACE" \
         -j ACCEPT
 
     # Allow return traffic
-    iptables -A DOCKER-USER \
+    iptables -A $IPTABLE_NAME  \
         -i "$WANFACE" \
         -o "$IFACE" \
         -m conntrack --ctstate RELATED,ESTABLISHED \
@@ -155,13 +168,16 @@ set_iptables(){
     iptables -t nat -A POSTROUTING -s 192.168.99.0/24 -o "$WANFACE" -j MASQUERADE
 }
 unset_iptables(){
+
+    # Remove jump from DOCKER-USER
+    # iptables -D DOCKER-USER -j $IPTABLE_NAME  2>/dev/null || true
+
+    # Remove all rules in our chain
+    iptables -F $IPTABLE_NAME  2>/dev/null || true
+
+    # Delete the chain itself
+    iptables -X $IPTABLE_NAME  2>/dev/null || true
     # iptables -D DOCKER-USER -s 192.168.99.0/24 -d 192.168.1.1 -j ACCEPT
-
-    iptables -D DOCKER-USER -s 192.168.99.0/24 -d 192.168.1.0/24 -j DROP
-
-    iptables -D DOCKER-USER -i "$IFACE "-o "$WANFACE" -j ACCEPT
-
-    iptables -D DOCKER-USER -i "$WANFACE" -o "$IFACE" -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 
     iptables -t nat -D POSTROUTING -s 192.168.99.0/24 -o "$WANFACE" -j MASQUERADE
 }
