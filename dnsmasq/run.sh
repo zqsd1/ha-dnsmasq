@@ -8,13 +8,14 @@ bashio::log.level "${LOG_LVL}
 clean_nftables(){
     nft delete table ip haap_zqsd 2>/dev/null || true
     nft delete table inet filter_haap_zqsd 2>/dev/null || true
-    if  is_masquerading_enabled; then
-        iptables-nft -t nat -D POSTROUTING -o "$WANFACE" -j MASQUERADE -m comment --comment "ap-addon-inet"
-    fi
-    if is_forwarding_enabled; then
-        iptables-nft -D FORWARD -i "$IFACE" -o "$WANFACE" -j ACCEPT -m comment --comment "ap-addon-inet"
-        iptables-nft -D FORWARD -i "$WANFACE" -o "$IFACE" -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT -m comment --comment "ap-addon-inet"
-fi
+    # if  is_masquerading_enabled; then
+    #     iptables-nft -t nat -D POSTROUTING -o "$WANFACE" -j MASQUERADE -m comment --comment "ap-addon-inet"
+    # fi
+    # if is_forwarding_enabled; then
+    #     iptables-nft -D FORWARD -i "$IFACE" -o "$WANFACE" -j ACCEPT -m comment --comment "ap-addon-inet"
+    #     iptables-nft -D FORWARD -i "$WANFACE" -o "$IFACE" -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT -m comment --comment "ap-addon-inet"
+    # fi
+    unset_iptables
 }
 CLEANED_UP=false
 # SIGTERM-handler this funciton will be executed when the container receives the SIGTERM signal (when stopping)
@@ -127,6 +128,34 @@ is_forwarding_enabled() {
     iptables-nft -C FORWARD -i "$IFACE" -o "$WANFACE" -j ACCEPT -m comment --comment "ap-addon-inet" 2>/dev/null
 }
 
+set_iptables(){
+    # Allow AP clients to reach the host itself
+    # iptables -I DOCKER-USER 1 -s 192.168.99.0/24 -d 192.168.1.1 -j ACCEPT
+
+    # Block access to the rest of the LAN
+    iptables -I DOCKER-USER 2 -s 192.168.99.0/24 -d 192.168.1.0/24 -j DROP
+
+    # Allow AP -> Internet forwarding
+    iptables -I DOCKER-USER 3 -i "$IFACE" -o "$WANFACE" -j ACCEPT
+
+    # Allow return traffic from Internet
+    iptables -I DOCKER-USER 4 -i "$WANFACE" -o "$IFACE" -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+
+    # NAT AP clients to the Internet
+    iptables -t nat -A POSTROUTING -s 192.168.99.0/24 -o "$WANFACE" -j MASQUERADE
+}
+unset_iptables(){
+    # iptables -D DOCKER-USER -s 192.168.99.0/24 -d 192.168.1.1 -j ACCEPT
+
+    iptables -D DOCKER-USER -s 192.168.99.0/24 -d 192.168.1.0/24 -j DROP
+
+    iptables -D DOCKER-USER -i "$IFACE "-o "$WANFACE" -j ACCEPT
+
+    iptables -D DOCKER-USER -i "$WANFACE" -o "$IFACE" -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+
+    iptables -t nat -D POSTROUTING -s 192.168.99.0/24 -o "$WANFACE" -j MASQUERADE
+}
+
 if bashio::config.true 'enable_nftables';then
     bashio::log.info "## Starting nftables"
     clean_nftables
@@ -136,13 +165,14 @@ if bashio::config.true 'enable_nftables';then
         /nftables.conf
     # nft -f /nftables.conf
     # nft list ruleset
-    if ! is_masquerading_enabled; then
-        iptables-nft -t nat -A POSTROUTING -o "$WANFACE" -j MASQUERADE -m comment --comment "ap-addon-inet"
-    fi
-    if ! is_forwarding_enabled; then
-        iptables-nft -A FORWARD -i "$IFACE" -o "$WANFACE" -j ACCEPT -m comment --comment "ap-addon-inet"
-        iptables-nft -A FORWARD -i "$WANFACE" -o "$IFACE" -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT -m comment --comment "ap-addon-inet"
-    fi
+    # if ! is_masquerading_enabled; then
+    #     iptables-nft -t nat -A POSTROUTING -o "$WANFACE" -j MASQUERADE -m comment --comment "ap-addon-inet"
+    # fi
+    # if ! is_forwarding_enabled; then
+    #     iptables-nft -A FORWARD -i "$IFACE" -o "$WANFACE" -j ACCEPT -m comment --comment "ap-addon-inet"
+    #     iptables-nft -A FORWARD -i "$WANFACE" -o "$IFACE" -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT -m comment --comment "ap-addon-inet"
+    # fi
+    set_iptables
 fi
 
 if bashio::config.true 'enable_dns';then

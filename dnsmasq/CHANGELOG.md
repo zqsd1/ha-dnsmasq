@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.1.13] 2026-05-29
+try deny access to other lan
+
 ## [0.1.12] 2026-05-29
 nftables doesnt works,going back to iptables script
 add switch to turn off dnsmasq so i can use external adguard
