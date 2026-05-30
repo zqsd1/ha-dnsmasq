@@ -8,11 +8,13 @@ bashio::log.level "${LOG_LVL}
 clean_nftables(){
     nft delete table ip haap_zqsd 2>/dev/null || true
     nft delete table inet filter_haap_zqsd 2>/dev/null || true
-
-    iptables-nft -t nat -D POSTROUTING -o "$WANFACE" -j MASQUERADE -m comment --comment "ap-addon-inet"
-    iptables-nft -D FORWARD -i "$IFACE" -o "$WANFACE" -j ACCEPT -m comment --comment "ap-addon-inet"
-    iptables-nft -D FORWARD -i "$WANFACE" -o "$IFACE" -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT -m comment --comment "ap-addon-inet"
-
+    if  is_masquerading_enabled; then
+        iptables-nft -t nat -D POSTROUTING -o "$WANFACE" -j MASQUERADE -m comment --comment "ap-addon-inet"
+    fi
+    if is_forwarding_enabled; then
+        iptables-nft -D FORWARD -i "$IFACE" -o "$WANFACE" -j ACCEPT -m comment --comment "ap-addon-inet"
+        iptables-nft -D FORWARD -i "$WANFACE" -o "$IFACE" -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT -m comment --comment "ap-addon-inet"
+fi
 }
 CLEANED_UP=false
 # SIGTERM-handler this funciton will be executed when the container receives the SIGTERM signal (when stopping)
@@ -117,6 +119,13 @@ fi
 bashio::log.info "## setup nmcli"
 nmcli_setup
 
+is_masquerading_enabled() {
+    iptables-nft -t nat -C POSTROUTING -o $DEFAULT_ROUTE_INTERFACE -j MASQUERADE -m comment --comment "ap-addon-inet" 2>/dev/null
+}
+
+is_forwarding_enabled() {
+    iptables-nft -C FORWARD -i $INTERFACE -o $DEFAULT_ROUTE_INTERFACE -j ACCEPT -m comment --comment "ap-addon-inet" 2>/dev/null
+}
 
 if bashio::config.true 'enable_nftables';then
     bashio::log.info "## Starting nftables"
@@ -127,9 +136,13 @@ if bashio::config.true 'enable_nftables';then
         /nftables.conf
     # nft -f /nftables.conf
     # nft list ruleset
-    iptables-nft -t nat -A POSTROUTING -o "$WANFACE" -j MASQUERADE -m comment --comment "ap-addon-inet"
-    iptables-nft -A FORWARD -i "$IFACE" -o "$WANFACE" -j ACCEPT -m comment --comment "ap-addon-inet"
-    iptables-nft -A FORWARD -i "$WANFACE" -o "$IFACE" -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT -m comment --comment "ap-addon-inet"
+     if ! is_masquerading_enabled; then
+        iptables-nft -t nat -A POSTROUTING -o "$WANFACE" -j MASQUERADE -m comment --comment "ap-addon-inet"
+    fi
+    if ! is_forwarding_enabled; then
+        iptables-nft -A FORWARD -i "$IFACE" -o "$WANFACE" -j ACCEPT -m comment --comment "ap-addon-inet"
+        iptables-nft -A FORWARD -i "$WANFACE" -o "$IFACE" -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT -m comment --comment "ap-addon-inet"
+    fi
 fi
 
 bashio::log.info "## Starting dnsmasq daemon"
