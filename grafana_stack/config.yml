@@ -20,6 +20,14 @@ webui: "http://[HOST]:[PORT:3001]/"
 hassio_role: default
 map:
   - addon_config:rw
+ports:
+    3001/tcp: null
+    9090/tcp: null
+    9115/tcp: null
+    9100/tcp: null
+privileged:
+  - NET_ADMIN
+  - NET_RAW
 options:
   grafana_port: 3001
   prometheus_port: 9090
