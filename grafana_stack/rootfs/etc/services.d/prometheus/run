@@ -7,6 +7,9 @@ PORT="$(bashio::config prometheus_port)"
 RETENTION="$(bashio::config prometheus_retention_time)"
 
 bashio::log.info "Starting Prometheus on port ${PORT}"
+while true; do
+  sleep 60
+done
 exec prometheus \
   --config.file=/data/prometheus/prometheus.yml \
   --storage.tsdb.path=/data/prometheus/data \

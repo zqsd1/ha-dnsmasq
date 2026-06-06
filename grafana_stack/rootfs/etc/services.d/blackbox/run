@@ -6,6 +6,9 @@ PORT="$(bashio::config blackbox_port)"
 CONFIG="/data/blackbox/blackbox.yml"
 
 bashio::log.info "Starting blackbox_exporter on port ${PORT}"
+while true; do
+  sleep 60
+done
 exec blackbox_exporter \
   --config.file="${CONFIG}" \
   --web.listen-address="0.0.0.0:${PORT}"
