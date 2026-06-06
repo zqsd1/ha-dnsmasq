@@ -11,7 +11,7 @@ startup: services
 boot: auto
 host_network: true
 host_pid: true
-apparmor: true
+apparmor: false
 init: false
 ingress: true
 ingress_port: 3001
