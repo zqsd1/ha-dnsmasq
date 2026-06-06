@@ -131,19 +131,12 @@ cat >"${GRAFANA_DIR}/grafana.ini" <<EOF
 [server]
 protocol = http
 http_port = ${GRAFANA_PORT}
-domain = localhost
-root_url = %(protocol)s://%(domain)s:%(http_port)s/
 
 [security]
 admin_user = ${GF_USER}
 admin_password = ${GF_PASS}
 allow_embedding = true
 
-[paths]
-data = ${GRAFANA_DIR}/data
-logs = ${GRAFANA_DIR}/data/logs
-plugins = ${GRAFANA_DIR}/data/plugins
-provisioning = ${GRAFANA_DIR}/provisioning
 
 [users]
 allow_sign_up = false

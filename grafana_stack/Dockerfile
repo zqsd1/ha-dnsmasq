@@ -19,7 +19,8 @@ RUN \
         tar \
         jq \  
         prometheus \
-        grafana 
+        grafana \
+        prometheus-blackbox-exporter
     
 COPY rootfs/ /
 
