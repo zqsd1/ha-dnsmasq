@@ -133,7 +133,6 @@ protocol = http
 http_port = ${GRAFANA_PORT}
 domain = localhost
 enforce_domain = false
-root_url = %(protocol)s://%(domain)s:%(http_port)s%%ingress_entry%%
 
 [security]
 admin_user = ${GF_USER}
