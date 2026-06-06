@@ -1,0 +1,85 @@
+#include <tunables/global>
+
+profile monitoring-stack flags=(attach_disconnected,mediate_deleted) {
+  #include <abstractions/base>
+
+  file,
+  signal (send) set=(kill,term,int,hup,cont),
+
+  /init ix,
+  /bin/** ix,
+  /usr/bin/** ix,
+  /run/{s6,s6-rc*,service}/** ix,
+  /package/** ix,
+  /command/** ix,
+  /etc/services.d/** rwix,
+  /etc/cont-init.d/** rwix,
+  /etc/cont-finish.d/** rwix,
+  /run/{,**} rwk,
+  /dev/tty rw,
+
+  /usr/lib/bashio/** ix,
+  /tmp/** rwk,
+  /data/** rw,
+
+  /usr/bin/prometheus cx -> prometheus,
+  /usr/bin/blackbox_exporter cx -> blackbox,
+  /usr/bin/conntrack_exporter cx -> conntrack,
+  /usr/bin/grafana cx -> grafana,
+
+  profile prometheus flags=(attach_disconnected,mediate_deleted) {
+    #include <abstractions/base>
+    signal (receive) peer=monitoring-stack,
+    capability net_bind_service,
+    capability dac_override,
+    network,
+    /data/** rw,
+    /usr/bin/prometheus mr,
+    /etc/prometheus/** r,
+    /lib/** mr,
+    /usr/lib/** mr,
+  }
+
+  profile conntrack flags=(attach_disconnected,mediate_deleted) {
+    #include <abstractions/base>
+    signal (receive) peer=monitoring-stack,
+    capability net_bind_service,
+    capability dac_override,
+    capability dac_read_search,
+    network,
+    /data/** rw,
+    /usr/bin/conntrack_exporter mr,
+    /lib/** mr,
+    /usr/lib/** mr,
+    /proc/** r,
+    /sys/** r,
+  }
+
+  profile blackbox flags=(attach_disconnected,mediate_deleted) {
+    #include <abstractions/base>
+    signal (receive) peer=monitoring-stack,
+    capability net_bind_service,
+    capability net_raw,
+    capability dac_override,
+    network,
+    /data/** rw,
+    /usr/bin/blackbox_exporter mr,
+    /lib/** mr,
+    /usr/lib/** mr,
+  }
+
+  profile grafana flags=(attach_disconnected,mediate_deleted) {
+    #include <abstractions/base>
+    signal (receive) peer=monitoring-stack,
+    capability net_bind_service,
+    capability dac_override,
+    capability setgid,
+    capability setuid,
+    network,
+    /data/** rw,
+    /usr/bin/grafana mr,
+    /usr/share/grafana/** mr,
+    /lib/** mr,
+    /usr/lib/** mr,
+  }
+}

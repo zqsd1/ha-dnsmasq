@@ -1,0 +1,11 @@
+#!/command/with-contenv bashio
+# shellcheck shell=bash
+set -euo pipefail
+
+PORT="$(bashio::config blackbox_port)"
+CONFIG="/data/blackbox/blackbox.yml"
+
+bashio::log.info "Starting blackbox_exporter on port ${PORT}"
+exec blackbox_exporter \
+  --config.file="${CONFIG}" \
+  --web.listen-address="0.0.0.0:${PORT}"

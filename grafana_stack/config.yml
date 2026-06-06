@@ -1,0 +1,61 @@
+---
+name: Monitoring Stack
+version: "1.0.2"
+slug: monitoring-stack
+description: Grafana, Prometheus, Blackbox, and Conntrack exporter for AP / network monitoring
+arch:
+  - aarch64
+  - amd64
+url: "https://github.com/local/ha-ap-traffic-monitor"
+startup: services
+boot: auto
+host_network: true
+host_pid: true
+apparmor: true
+init: false
+ingress: true
+ingress_port: 3001
+ingress_entry: /
+webui: "http://[HOST]:[PORT:3001]/"
+hassio_role: default
+map:
+  - addon_config:rw
+options:
+  grafana_port: 3001
+  prometheus_port: 9090
+  blackbox_port: 9115
+  grafana_admin_user: admin
+  grafana_admin_password: admin
+  prometheus_retention_time: 15d
+  scrape_interval: 30s
+  ap_traffic_monitor_url: "http://127.0.0.1:3000"
+  scrape_ap_traffic: true
+  scrape_telegraf: false
+  telegraf_prometheus_port: 9273
+  scrape_conntrack: true
+  conntrack_port: 9095
+  conntrack_scrape_interval: 60
+  blackbox_http_targets:
+    - "https://www.google.com"
+  blackbox_icmp_targets: []
+  custom_prometheus_jobs: ""
+schema:
+  grafana_port: port
+  prometheus_port: port
+  blackbox_port: port
+  grafana_admin_user: str
+  grafana_admin_password: password
+  prometheus_retention_time: str
+  scrape_interval: str
+  ap_traffic_monitor_url: str
+  scrape_ap_traffic: bool
+  scrape_telegraf: bool
+  telegraf_prometheus_port: port
+  scrape_conntrack: bool
+  conntrack_port: port
+  conntrack_scrape_interval: int(15,300)
+  blackbox_http_targets:
+    - str
+  blackbox_icmp_targets:
+    - match(^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$)
+  custom_prometheus_jobs: str?

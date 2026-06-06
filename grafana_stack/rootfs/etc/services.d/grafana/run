@@ -1,0 +1,10 @@
+#!/command/with-contenv bashio
+# shellcheck shell=bash
+set -euo pipefail
+
+CONFIG="/data/grafana/grafana.ini"
+
+bashio::log.info "Starting Grafana (ingress port $(bashio::config grafana_port))"
+
+
+exec grafana server --homepath /usr/share/grafana --config "${CONFIG}"
