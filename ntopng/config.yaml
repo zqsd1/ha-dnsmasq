@@ -5,6 +5,7 @@ slug: ntopng
 description: Network traffic monitoring using ntopng
 startup: services
 boot: auto
+arch: [aarch64, amd64]
 
 host_network: true
 privileged:
