@@ -1,0 +1,22 @@
+name: ntopng
+version: "1.0"
+slug: ntopng
+description: Network traffic monitoring using ntopng
+startup: services
+boot: auto
+
+host_network: true
+privileged:
+  - NET_ADMIN
+
+ports:
+  4000/tcp: 4000
+
+image: ntop/ntopng:latest
+
+options: {
+  interface: wlan0
+}
+schema: {
+  interface: str
+}
