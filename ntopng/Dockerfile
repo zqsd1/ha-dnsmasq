@@ -1,4 +1,5 @@
-FROM ntop/ntopng:latest
+ARG BUILD_FROM=ntop/ntopng:latest
+FROM $BUILD_FROM
 
 
 COPY run.sh /
