@@ -1,0 +1,6 @@
+#!/command/with-contenv bashio
+# shellcheck shell=bash
+# Remove all rules in our chain
+iptables -F TRAFFIC_MONITOR  2>/dev/null || true
+# Delete the chain itself ##refuse to be deleted if still linked
+iptables -X TRAFFIC_MONITOR  2>/dev/null || true 

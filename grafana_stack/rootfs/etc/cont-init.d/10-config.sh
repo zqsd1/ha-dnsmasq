@@ -177,7 +177,9 @@ bashio::log.info "Monitoring configs ready (Grafana :${GRAFANA_PORT}, Prometheus
 chmod -R 755 /data/prometheus
 chmod -R 755 /data/grafana
 
-iptables -N TRAFFIC_MONITOR
+
+iptables -N TRAFFIC_MONITOR 2>/dev/null || true
+iptables -F TRAFFIC_MONITOR 
 iptables -I FORWARD 1 -j TRAFFIC_MONITOR
 
 iptables -A TRAFFIC_MONITOR -s 192.168.99.153 -j RETURN
