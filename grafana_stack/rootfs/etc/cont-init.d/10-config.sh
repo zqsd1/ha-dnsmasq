@@ -62,6 +62,12 @@ fi
   echo "      - targets: ['127.0.0.1:${BLACKBOX_PORT}']"
   echo ""
 
+  echo "  - job_name: node"
+  echo "    static_configs:"
+  echo "      - targets:"
+  echo "          - localhost:9100"
+  echo ""
+
   if bashio::config.true "scrape_telegraf"; then
     TG_PORT="$(bashio::config telegraf_prometheus_port)"
     echo "  - job_name: telegraf"

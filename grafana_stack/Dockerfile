@@ -10,7 +10,8 @@ RUN apk add --no-cache \
     jq \
     prometheus \
     grafana \
-    prometheus-blackbox-exporter
+    prometheus-blackbox-exporter \
+    prometheus-node-exporter 
 
 RUN mkdir -p \
     /data/prometheus \
