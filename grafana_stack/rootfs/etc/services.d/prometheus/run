@@ -15,5 +15,5 @@ ls -ld /data
 mkdir -p /data/prometheus
 
 exec prometheus \
-  --config.file=/etc/prometheus/prometheus.yml \
+  --config.file=/data/prometheus/prometheus.yml \
   --storage.tsdb.path=/data/prometheus

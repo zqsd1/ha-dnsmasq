@@ -10,8 +10,6 @@ export GF_PATHS_PLUGINS=/data/grafana/plugins
 export GF_PATHS_PROVISIONING=/etc/grafana/provisioning
 
 bashio::log.info "Starting Grafana (ingress port $(bashio::config grafana_port))"
-while true; do
-  sleep 60
-done
+
 
 exec grafana server --homepath /usr/share/grafana --config "${CONFIG}"
