@@ -1,4 +1,4 @@
 #!/command/with-contenv bashio
 # shellcheck shell=bash
 
-exec node_exporter
+exec node_exporter  --collector.textfile.directory=/data/node_exporter

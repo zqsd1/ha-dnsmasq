@@ -8,6 +8,7 @@ set -euo pipefail
 PROM_DIR="/data/prometheus"
 GRAFANA_DIR="/data/grafana"
 BLACKBOX_DIR="/data/blackbox"
+NODE_DIR="/data/node_exporter"
 PROM_PORT="$(bashio::config prometheus_port)"
 BLACKBOX_PORT="$(bashio::config blackbox_port)"
 GRAFANA_PORT="$(bashio::config grafana_port)"
@@ -15,7 +16,7 @@ SCRAPE_INTERVAL="$(bashio::config scrape_interval)"
 RETENTION="$(bashio::config prometheus_retention_time)"
 AP_URL="$(bashio::config ap_traffic_monitor_url)"
 
-mkdir -p "${PROM_DIR}/data" "${GRAFANA_DIR}/data" "${GRAFANA_DIR}/provisioning/datasources" "${BLACKBOX_DIR}"
+mkdir -p "${PROM_DIR}/data" "${GRAFANA_DIR}/data" "${GRAFANA_DIR}/provisioning/datasources" "${BLACKBOX_DIR}" "${NODE_DIR}"
 
 cat >"${BLACKBOX_DIR}/blackbox.yml" <<'EOF'
 modules:
@@ -68,11 +69,7 @@ fi
   echo "          - localhost:9100"
   echo ""
 
-  echo "  - job_name: iptable"
-  echo "    static_configs:"
-  echo "      - targets:"
-  echo "          - localhost:9200"
-  echo ""
+
 
   if bashio::config.true "scrape_telegraf"; then
     TG_PORT="$(bashio::config telegraf_prometheus_port)"

@@ -1,14 +1,17 @@
-#!/command/with-contenv sh
-# shellcheck shell=sh
-while true
-do
-    mkdir -p /tmp/exporter
+#!/command/with-contenv bashio
+# shellcheck shell=bash
+while true; do
 
-    /iptables-exporter.sh \
-        > /tmp/exporter/metrics
+  TMP="/data/node_exporter/iptables.prom.tmp"
 
-    sleep 5
-done &
-    
-cd /tmp/exporter
-exec busybox httpd -f -p 9200
+  iptables -L TRAFFIC_MONITOR -v -n -x | awk '
+  /RETURN/ {
+      bytes=$2
+      ip=$8
+      printf "host_upload_bytes_total{ip=\"%s\"} %s\n", ip, bytes
+  }' > "$TMP"
+
+  mv "$TMP" /data/node_exporter/iptables.prom
+
+  sleep 5
+done
