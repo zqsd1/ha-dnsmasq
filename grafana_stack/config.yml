@@ -18,8 +18,7 @@ ingress_port: 3001
 ingress_entry: /
 webui: "http://[HOST]:[PORT:3001]/"
 hassio_role: default
-map:
-  - addon_config:rw
+
 options:
   grafana_port: 3001
   prometheus_port: 9090
