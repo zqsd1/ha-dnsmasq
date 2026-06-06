@@ -4,6 +4,11 @@ set -euo pipefail
 
 CONFIG="/data/grafana/grafana.ini"
 
+export GF_PATHS_DATA=/data/grafana
+export GF_PATHS_LOGS=/data/grafana/logs
+export GF_PATHS_PLUGINS=/data/grafana/plugins
+export GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+
 bashio::log.info "Starting Grafana (ingress port $(bashio::config grafana_port))"
 
 

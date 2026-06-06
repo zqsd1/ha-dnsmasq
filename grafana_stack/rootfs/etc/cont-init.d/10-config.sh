@@ -158,3 +158,7 @@ if bashio::config.true "scrape_conntrack"; then
   CT_INFO=", Conntrack :$(bashio::config conntrack_port)"
 fi
 bashio::log.info "Monitoring configs ready (Grafana :${GRAFANA_PORT}, Prometheus :${PROM_PORT}, Blackbox :${BLACKBOX_PORT}${CT_INFO})"
+
+
+chmod -R 755 /data/prometheus
+chmod -R 755 /data/grafana
