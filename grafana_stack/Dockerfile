@@ -11,7 +11,9 @@ RUN apk add --no-cache \
     prometheus \
     grafana \
     prometheus-blackbox-exporter \
-    prometheus-node-exporter 
+    prometheus-node-exporter \
+    iptables \
+    busybox-extras
 
 RUN mkdir -p \
     /data/prometheus \

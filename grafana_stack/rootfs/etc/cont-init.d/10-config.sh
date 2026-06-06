@@ -68,6 +68,12 @@ fi
   echo "          - localhost:9100"
   echo ""
 
+  echo "  - job_name: iptable"
+  echo "    static_configs:"
+  echo "      - targets:"
+  echo "          - localhost:9200"
+  echo ""
+
   if bashio::config.true "scrape_telegraf"; then
     TG_PORT="$(bashio::config telegraf_prometheus_port)"
     echo "  - job_name: telegraf"
@@ -170,3 +176,8 @@ bashio::log.info "Monitoring configs ready (Grafana :${GRAFANA_PORT}, Prometheus
 
 chmod -R 755 /data/prometheus
 chmod -R 755 /data/grafana
+
+iptables -N TRAFFIC_MONITOR
+iptables -I FORWARD 1 -j TRAFFIC_MONITOR
+
+iptables -A TRAFFIC_MONITOR -s 192.168.99.153 -j RETURN

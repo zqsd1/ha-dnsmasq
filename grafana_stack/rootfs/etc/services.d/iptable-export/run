@@ -1,0 +1,14 @@
+#!/command/with-contenv sh
+# shellcheck shell=sh
+while true
+do
+    mkdir -p /tmp/exporter
+
+    /iptables-exporter.sh \
+        > /tmp/exporter/metrics
+
+    sleep 5
+done &
+    
+cd /tmp/exporter
+exec busybox httpd -f -p 9200
