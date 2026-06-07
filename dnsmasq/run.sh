@@ -211,7 +211,7 @@ if bashio::config.true 'enable_dns';then
     fi
     if bashio::config.true 'override_dns';then
         sed -i \
-            -e "s/dhcp-option=option:dns-server,192.168.99.1/dhcp-option=option:dns-server,${DNS_SERVER}"
+            -e "s/dhcp-option=option:dns-server,192.168.99.1/dhcp-option=option:dns-server,${DNS_SERVER}/g" /dnsmasq.conf
     fi
     printf "\nserver=%s\n" "${DNS_SERVER}" >>/dnsmasq.conf
     sleep 5
@@ -223,6 +223,9 @@ if bashio::config.true 'enable_dns';then
     fi
 fi
 bashio::log.info "setup finished, sleep till the end of the world ....."
-# tcpdump -i "$IFACE"
+if bashio::config.true 'spy_network';then
+    tcpdump -i "${IFACE}"
+fi
 sleep infinity &
 wait $!
+
