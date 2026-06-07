@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.1.15] 2026-05-29
+allow to send directly to dns server
+
 ## [0.1.14] 2026-05-29
 allow change of dns server
 use default for ra advertising timings
