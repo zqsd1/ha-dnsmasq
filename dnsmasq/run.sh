@@ -224,8 +224,8 @@ if bashio::config.true 'enable_dns';then
 fi
 bashio::log.info "setup finished, sleep till the end of the world ....."
 if bashio::config.true 'spy_network';then
-    tcpdump -i "${IFACE}" -nn \
-    'tcp[tcpflags] & tcp-syn != 0'
+    tcpdump -i "${IFACE}" -n \
+    'not arp and not icmp and not icmp6 and not ether proto 0x888e and (tcp or udp)'
     # tcpdump -i "${IFACE}"
 fi
 sleep infinity &
