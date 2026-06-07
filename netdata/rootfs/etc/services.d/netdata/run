@@ -1,0 +1,12 @@
+#!/command/with-contenv bashio
+# shellcheck shell=bash
+set -euo pipefail
+
+ND_ETC="/data/netdata/etc/netdata.conf"
+
+if bashio::config.true "debug"; then
+  export NETDATA_DEBUG=1
+fi
+
+# -D = do not fork (foreground). Without it netdata daemonizes, s6 restarts, logs spam.
+exec netdata -D -c "${ND_ETC}"
