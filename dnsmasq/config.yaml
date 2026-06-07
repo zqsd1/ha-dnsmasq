@@ -25,6 +25,7 @@ options:
   enable_dns: false
   enable_nftables: false
   dns_server: 1.1.1.1
+  override_dns: true
 schema:
   dry_run: bool
   log_level: list(trace|debug|info|notice|warning|error|fatal)?
@@ -36,3 +37,4 @@ schema:
   enable_dns: bool
   enable_nftables: bool
   dns_server: str
+  override_dns: bool

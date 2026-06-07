@@ -209,6 +209,10 @@ if bashio::config.true 'enable_dns';then
         sed -i \
             -e "s/wlan0/$IFACE/g" /dnsmasq.conf
     fi
+    if bashio::config.true 'override_dns';then
+        sed -i \
+            -e "s/dhcp-option=option:dns-server,192.168.99.1/dhcp-option=option:dns-server,${DNS_SERVER}"
+    fi
     printf "\nserver=%s\n" "${DNS_SERVER}" >>/dnsmasq.conf
     sleep 5
     cat /dnsmasq.conf
