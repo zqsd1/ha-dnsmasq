@@ -1,8 +1,7 @@
-#!/usr/bin/with-contenv bashio
-# shellcheck shell=bash
+#!/usr/bin/env bash
+
 echo "Starting ntopng..."
 
-INTERFACE="$(bashio::config 'interface')"
 ntopng \
   -i "${INTERFACE}" \
   -w 4000
