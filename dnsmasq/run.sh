@@ -225,7 +225,7 @@ fi
 bashio::log.info "setup finished, sleep till the end of the world ....."
 if bashio::config.true 'spy_network';then
     tcpdump -i "${IFACE}" -n \
-    'not arp and not icmp and not icmp6 and not ether proto 0x888e and not (ip6 and net fe80::/10) and (tcp or udp)'
+    'not arp and not icmp and not icmp6 and not ether proto 0x888e and not (ip6 and net fe80::/10) and not port 5353 and (tcp or udp)'
     # tcpdump -i "${IFACE}"
 fi
 sleep infinity &
