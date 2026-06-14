@@ -6,7 +6,7 @@ ARG BUILD_ARCH=amd64
 
 RUN set -eux; \
     echo "BUILD_ARCH=${BUILD_ARCH}"; \
-    if [ "${BUILD_ARCH}" = "aarch64" ]; then \
+    if [ "${BUILD_ARCH}" = "amd64" ]; then \
         echo "Running amd64 branch"; \
         apt-get update && \
         apt-get install -y software-properties-common wget && \
@@ -15,14 +15,15 @@ RUN set -eux; \
         apt-get install -y ./apt-ntop.deb && \
         apt-get update && \
         apt-get install -y pfring-dkms nprobe ntopng n2disk cento ntap; \
-    # elif [ "${BUILD_ARCH}" = "aarch64" ]; then \
-    #     echo "Running aarch64 branch"; \
-    #     apt-get update && \
-    #     apt-get install -y wget && \
-    #     wget -O apt-ntop.deb https://packages.ntop.org/RaspberryPI/apt-ntop.deb && \
-    #     apt-get install -y ./apt-ntop.deb \
-    #     apt-get update && \
-    #     apt-get install -y nprobe ntopng; \
+    elif [ "${BUILD_ARCH}" = "aarch64" ]; then \
+        echo "Running aarch64 branch"; \
+        apt-get update && \
+        apt-get install -y lsb-release wget gnupg software-properties-common libelf1 apt-transport-https ca-certificates  && \
+        wget -O apt-ntop.deb https://packages.ntop.org/RaspberryPI/apt-ntop.deb && \
+        apt-get install -y ./apt-ntop.deb \
+        apt-get clean all && \
+        apt-get update && \
+        apt-get install -y nprobe ntopng libcap2 libzstd1; \
     else \
         echo "Unknown BUILD_ARCH=${BUILD_ARCH}"; \
         exit 1; \
