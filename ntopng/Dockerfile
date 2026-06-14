@@ -5,19 +5,25 @@ FROM $BUILD_FROM
 ARG BUILD_ARCH=amd64
 
 RUN set -eux; \
+    echo "BUILD_ARCH=${BUILD_ARCH}"; \
     if [ "${BUILD_ARCH}" = "amd64" ]; then \
+        echo "Running amd64 branch"; \
         apt-get update && \
         apt-get install -y software-properties-common wget && \
         add-apt-repository universe && \
-        wget -O apt-ntop.deb https://packages.ntop.org/apt/26.04/all/apt-ntop.deb && \
+        wget -O apt-ntop.deb https://packages.ntop.org/apt/24.04/all/apt-ntop.deb && \
         apt-get install -y ./apt-ntop.deb && \
         apt-get update && \
         apt-get install -y pfring-dkms nprobe ntopng n2disk cento ntap; \
     elif [ "${BUILD_ARCH}" = "aarch64" ]; then \
+        echo "Running aarch64 branch"; \
         wget -O apt-ntop.deb https://packages.ntop.org/RaspberryPI/apt-ntop.deb && \
         dpkg -i apt-ntop.deb && \
         apt-get update && \
         apt-get install -y nprobe ntopng; \
+    else \
+        echo "Unknown BUILD_ARCH=${BUILD_ARCH}"; \
+        exit 1; \
     fi 
 
 COPY run.sh /
