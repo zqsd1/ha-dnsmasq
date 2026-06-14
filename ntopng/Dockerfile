@@ -17,7 +17,7 @@ RUN set -eux; \
         apt-get install -y pfring-dkms nprobe ntopng n2disk cento ntap; \
     elif [ "${BUILD_ARCH}" = "aarch64" ]; then \
         echo "Running aarch64 branch"; \
-        apt-get install -y wget \
+        apt-get install -y wget && \
         wget -O apt-ntop.deb https://packages.ntop.org/RaspberryPI/apt-ntop.deb && \
         dpkg -i apt-ntop.deb && \
         apt-get update && \
