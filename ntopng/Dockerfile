@@ -15,14 +15,14 @@ RUN set -eux; \
         apt-get install -y ./apt-ntop.deb && \
         apt-get update && \
         apt-get install -y pfring-dkms nprobe ntopng n2disk cento ntap; \
-    elif [ "${BUILD_ARCH}" = "aarch64" ]; then \
-        echo "Running aarch64 branch"; \
-        apt-get update && \
-        apt-get install -y wget whiptail lsb-release gnupg && \
-        wget -O apt-ntop.deb https://packages.ntop.org/RaspberryPI/apt-ntop.deb && \
-        apt-get install -y ./apt-ntop.deb \
-        apt-get update && \
-        apt-get install -y nprobe ntopng; \
+    # elif [ "${BUILD_ARCH}" = "aarch64" ]; then \
+    #     echo "Running aarch64 branch"; \
+    #     apt-get update && \
+    #     apt-get install -y wget && \
+    #     wget -O apt-ntop.deb https://packages.ntop.org/RaspberryPI/apt-ntop.deb && \
+    #     apt-get install -y ./apt-ntop.deb \
+    #     apt-get update && \
+    #     apt-get install -y nprobe ntopng; \
     else \
         echo "Unknown BUILD_ARCH=${BUILD_ARCH}"; \
         exit 1; \
