@@ -37,5 +37,5 @@ RUN chmod a+x /etc/s6-overlay/s6-rc.d/ntopng/run
 # CMD [ "/run.sh" ]
 
 
-ENTRYPOINT ["/init"]
+# ENTRYPOINT ["/init"]
 
