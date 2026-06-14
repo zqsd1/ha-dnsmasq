@@ -32,5 +32,7 @@ RUN set -eux; \
 COPY run.sh /
 RUN chmod a+x /run.sh
 
-CMD [ "/run.sh" ]
+COPY rootfs /
+RUN chmod a+x /etc/s6-overlay/s6-rc.d/run
+# CMD [ "/run.sh" ]
 
