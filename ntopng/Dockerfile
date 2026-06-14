@@ -18,7 +18,7 @@ RUN set -eux; \
     elif [ "${BUILD_ARCH}" = "aarch64" ]; then \
         echo "Running aarch64 branch"; \
         apt-get update && \
-        apt-get install -y wget && \
+        apt-get install -y wget whiptail lsb-release gnupg && \
         wget -O apt-ntop.deb https://packages.ntop.org/RaspberryPI/apt-ntop.deb && \
         dpkg -i apt-ntop.deb && \
         apt-get update && \
