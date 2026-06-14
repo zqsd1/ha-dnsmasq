@@ -29,9 +29,9 @@ term_handler(){
     killall dnsmasq 2>/dev/null || true
 
     clean_nftables
-   
+
     nmcli connection delete $CONN_NAME 2>/dev/null || true
-    
+
 	exit 0
 }
 
@@ -88,8 +88,11 @@ DRY_RUN="$(bashio::config 'dry_run' false)"
 
 IPTABLE_NAME=ZQSD_DNSMASQ_TABLE
 DNS_SERVER="$(bashio::config 'dns_server')"
-
+PERSISTANCE_FILE=/data/matter_access_point_uuid
 nmcli_setup(){
+    if [[ -f $PERSISTANCE_FILE ]];then
+        nmcli connection delete "$(< $PERSISTANCE_FILE)" 2>/dev/null || true
+    fi
         nmcli connection delete $CONN_NAME 2>/dev/null || true
     	nmcli connection add type wifi ifname "$IFACE" con-name "$CONN_NAME" autoconnect yes ssid "$SSID" \
 		802-11-wireless.mode ap \
@@ -107,7 +110,9 @@ nmcli_setup(){
         ipv4.addresses "$IP_CIDR" \
         ipv6.method manual \
         ipv6.never-default yes \
-        ipv6.addresses fd44:44::1/64 
+        ipv6.addresses fd44:44::1/64
+
+        nmcli -g connection.uuid connection show $CONN_NAME >$PERSISTANCE_FILE
 }
 
 
@@ -137,15 +142,15 @@ set_iptables(){
     iptables -N $IPTABLE_NAME  2>/dev/null || true
 
     # Clear only our chain
-    iptables -F $IPTABLE_NAME 
+    iptables -F $IPTABLE_NAME
 
     # Ensure DOCKER-USER jumps to our chain exactly once
     iptables -C DOCKER-USER -j $IPTABLE_NAME  2>/dev/null || \
-    iptables -A DOCKER-USER -j $IPTABLE_NAME 
+    iptables -A DOCKER-USER -j $IPTABLE_NAME
 
     # Allow AP clients to reach the host itself
     # iptables -I DOCKER-USER 1 -s 192.168.99.0/24 -d 192.168.1.1 -j ACCEPT
-    
+
     # Block AP clients from reaching the main LAN
     iptables -A $IPTABLE_NAME  \
         -s 192.168.99.0/24 \
@@ -177,7 +182,7 @@ unset_iptables(){
     iptables -F $IPTABLE_NAME  2>/dev/null || true
 
     # Delete the chain itself ##refuse to be deleted if still linked
-    iptables -X $IPTABLE_NAME  2>/dev/null || true 
+    iptables -X $IPTABLE_NAME  2>/dev/null || true
 
     iptables -t nat -D POSTROUTING -s 192.168.99.0/24 -o "$WANFACE" -j MASQUERADE
 }
