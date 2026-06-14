@@ -21,7 +21,6 @@ RUN set -eux; \
         apt-get install -y lsb-release wget gnupg  libelf1 apt-transport-https ca-certificates  && \
         wget -O apt-ntop.deb https://packages.ntop.org/RaspberryPI/apt-ntop.deb && \
         apt-get install -y ./apt-ntop.deb \
-        apt-get clean all && \
         apt-get update && \
         apt-get install -y nprobe ntopng libcap2 libzstd1; \
     else \
