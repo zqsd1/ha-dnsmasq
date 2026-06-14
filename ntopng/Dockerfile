@@ -33,7 +33,7 @@ COPY run.sh /
 RUN chmod a+x /run.sh
 
 COPY rootfs /
-RUN chmod a+x /etc/s6-overlay/s6-rc.d/run
+RUN chmod a+x /etc/s6-overlay/s6-rc.d/ntopng/run
 # CMD [ "/run.sh" ]
 
 
