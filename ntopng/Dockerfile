@@ -36,3 +36,6 @@ COPY rootfs /
 RUN chmod a+x /etc/s6-overlay/s6-rc.d/run
 # CMD [ "/run.sh" ]
 
+
+ENTRYPOINT ["/init"]
+
