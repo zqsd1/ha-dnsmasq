@@ -18,7 +18,7 @@ RUN set -eux; \
     elif [ "${BUILD_ARCH}" = "aarch64" ]; then \
         echo "Running aarch64 branch"; \
         apt-get update && \
-        apt-get install -y lsb-release wget gnupg software-properties-common libelf1 apt-transport-https ca-certificates  && \
+        apt-get install -y lsb-release wget gnupg  libelf1 apt-transport-https ca-certificates  && \
         wget -O apt-ntop.deb https://packages.ntop.org/RaspberryPI/apt-ntop.deb && \
         apt-get install -y ./apt-ntop.deb \
         apt-get clean all && \
