@@ -6,7 +6,7 @@ ARG BUILD_ARCH=amd64
 
 RUN set -eux; \
     echo "BUILD_ARCH=${BUILD_ARCH}"; \
-    if [ "${BUILD_ARCH}" = "amd64" ]; then \
+    if [ "${BUILD_ARCH}" = "aarch64" ]; then \
         echo "Running amd64 branch"; \
         apt-get update && \
         apt-get install -y software-properties-common wget && \
@@ -20,7 +20,7 @@ RUN set -eux; \
         apt-get update && \
         apt-get install -y wget whiptail lsb-release gnupg && \
         wget -O apt-ntop.deb https://packages.ntop.org/RaspberryPI/apt-ntop.deb && \
-        dpkg -i apt-ntop.deb && \
+        apt-get install -y ./apt-ntop.deb \
         apt-get update && \
         apt-get install -y nprobe ntopng; \
     else \
