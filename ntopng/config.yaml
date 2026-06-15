@@ -10,7 +10,7 @@ host_network: true
 privileged:
   - NET_ADMIN
   - NET_RAW
-
+init: false
 
 options: 
   interface: wlan0
