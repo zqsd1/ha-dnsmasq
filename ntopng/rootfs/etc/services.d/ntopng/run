@@ -2,9 +2,10 @@
 # shellcheck shell=bash
 
 echo "Starting ntopng..."
-sleep infinity
-# INTERFACE="$(bashio::config interface)"
+INTERFACE="$(bashio::config interface)"
+echo "$INTERFACE"
+sleep 10
 
-# exec ntopng \
-#   -i "${INTERFACE}" \
-#   -w 4000
+exec ntopng \
+  -i "${INTERFACE}" \
+  -w 4000
