@@ -2,7 +2,7 @@
 # shellcheck shell=bash
 
 echo "Starting ntopng..."
-sleep infinty
+sleep infinity
 # INTERFACE="$(bashio::config interface)"
 
 # exec ntopng \

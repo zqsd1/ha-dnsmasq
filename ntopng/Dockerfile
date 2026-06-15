@@ -1,4 +1,4 @@
-ARG BUILD_FROM
+ARG BUILD_FROM=ghcr.io/home-assistant/base-ubuntu
 FROM ${BUILD_FROM}
 
 ARG BUILD_ARCH=amd64
@@ -33,6 +33,7 @@ RUN set -eux; \
 COPY rootfs /
 # RUN chmod a+x /etc/s6-overlay/s6-rc.d/ntopng/run
 RUN chmod a+x /etc/services.d/ntopng/run
+RUN chmod a+x /etc/cont-init.d/00-debug
 # CMD [ "/run.sh" ]
 
 RUN ps -p 1 -f || true
