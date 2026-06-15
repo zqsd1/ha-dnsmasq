@@ -1,6 +1,5 @@
-ARG BUILD_FROM=ntop/ntopng:latest
-FROM $BUILD_FROM
-
+ARG BUILD_FROM
+FROM ${BUILD_FROM}
 
 ARG BUILD_ARCH=amd64
 
@@ -35,6 +34,11 @@ COPY rootfs /
 # RUN chmod a+x /etc/s6-overlay/s6-rc.d/ntopng/run
 RUN chmod a+x /etc/services.d/ntopng/run
 # CMD [ "/run.sh" ]
+
+RUN ps -p 1 -f || true
+RUN ls -la /init || true
+RUN which bashio || true
+RUN ls -l /command/with-contenv || true
 
 
 # ENTRYPOINT ["/init"]
