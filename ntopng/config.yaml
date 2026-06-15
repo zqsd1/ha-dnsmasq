@@ -11,9 +11,6 @@ host_network: true
 privileged:
   - NET_ADMIN
 
-ports:
-  4000/tcp: 4000
-
 
 options: 
   interface: wlan0
