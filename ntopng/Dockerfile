@@ -33,6 +33,8 @@ RUN set -eux; \
 COPY rootfs /
 # RUN chmod a+x /etc/s6-overlay/s6-rc.d/ntopng/run
 RUN chmod a+x /etc/services.d/ntopng/run
+RUN chmod a+x /etc/services.d/redis/run
+
 RUN chmod a+x /etc/cont-init.d/00-debug
 # CMD [ "/run.sh" ]
 

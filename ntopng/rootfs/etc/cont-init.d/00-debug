@@ -1,7 +1,10 @@
 #!/bin/sh
 
 echo "===== DEBUG ====="
-ps -p 1 -f
+# ps -p 1 -f
 id
 ls -la /etc/services.d
+which ntopng
+ntopng --version
+ldd "$(which ntopng)"
 echo "===== END DEBUG ====="
