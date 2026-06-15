@@ -1,11 +1,10 @@
-#!/command/with-contenv bashio
-# shellcheck shell=bash
+#!/bin/sh
 
 echo "Starting ntopng..."
-INTERFACE="$(bashio::config interface)"
-echo "$INTERFACE"
-sleep 10
-
-exec ntopng \
-  -i "${INTERFACE}" \
-  -w 4000
+# INTERFACE="$(bashio::config interface)"
+# echo "$INTERFACE"
+# sleep 10
+exec ntopng -i wlp1s0u1u4 -w 4000
+# exec ntopng \
+#   -i "${INTERFACE}" \
+#   -w 4000
