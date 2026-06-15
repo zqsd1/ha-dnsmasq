@@ -1,6 +1,6 @@
 ---
 name: ntopng
-version: "1.0"
+version: "1.0.1"
 slug: ntopng
 description: Network traffic monitoring using ntopng
 startup: services
