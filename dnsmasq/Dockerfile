@@ -1,4 +1,4 @@
-ARG BUILD_FROM
+ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base:3.23
 FROM $BUILD_FROM
 
 LABEL \
@@ -23,11 +23,12 @@ RUN apk update && \
 COPY dnsmasq.conf /
 COPY nftables.conf /
 
+COPY rootfs /
 
 COPY run.sh /
 RUN chmod a+x /run.sh
 
-HEALTHCHECK --interval=30s --timeout=5s --retries=2 --start-period=15s  CMD healthcheck.sh
+HEALTHCHECK --interval=30s --timeout=5s --retries=2 --start-period=15s  CMD healthcheck
 
 CMD [ "/run.sh" ]
 
