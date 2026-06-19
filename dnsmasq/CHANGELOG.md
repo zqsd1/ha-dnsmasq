@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.1.16] 2026-06-19
+healcheck and persistance test
+
 ## [0.1.15] 2026-05-29
 allow to send directly to dns server
 

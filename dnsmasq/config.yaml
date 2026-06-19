@@ -1,6 +1,6 @@
 ---
 name: dnsmasq by zqsd
-version: 0.1.15
+version: 0.1.16
 slug: dnsmasq.zqsd
 description: dnsmasq server because official one doesnt fit me
 arch: [armhf, armv7, aarch64, amd64, i386]
