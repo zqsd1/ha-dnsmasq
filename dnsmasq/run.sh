@@ -2,8 +2,12 @@
 # shellcheck shell=bash
 
 LOG_LVL="$(bashio::config 'log_level')"
-bashio::log.level "${LOG_LVL}
-"
+bashio::log.level "${LOG_LVL}"
+
+PERSISTANCE_TEST=/data/test
+bashio::log.info "test if persistance work"
+echo "1" >> "${PERSISTANCE_TEST}"
+cat ${PERSISTANCE_TEST}
 
 clean_nftables(){
     nft delete table ip haap_zqsd 2>/dev/null || true
