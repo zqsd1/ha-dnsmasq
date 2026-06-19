@@ -4,7 +4,7 @@ FROM $BUILD_FROM
 LABEL \
     org.opencontainers.image.title="ha dnsmasq by zqsd" \
     org.opencontainers.image.description="dnsmasq to fit my need" \
-    org.opencontainers.image.source="https://github.com/zqsd/ha-dnsmasq" 
+    org.opencontainers.image.source="https://github.com/zqsd/ha-dnsmasq"
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -26,6 +26,8 @@ COPY nftables.conf /
 
 COPY run.sh /
 RUN chmod a+x /run.sh
+
+HEALTHCHECK --interval=30s --timeout=5s --retries=2 --start-period=15s  CMD healthcheck.sh
 
 CMD [ "/run.sh" ]
 
