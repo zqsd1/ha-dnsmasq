@@ -1,10 +1,12 @@
 ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base:3.23
 FROM $BUILD_FROM
 
-LABEL \
-    org.opencontainers.image.title="ha dnsmasq by zqsd" \
-    org.opencontainers.image.description="dnsmasq to fit my need" \
-    org.opencontainers.image.source="https://github.com/zqsd/ha-dnsmasq"
+
+COPY dnsmasq.conf /
+COPY nftables.conf /
+
+COPY rootfs /
+# RUN chmod a+x /etc/cont-init.d/10-test.sh
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -20,10 +22,6 @@ RUN apk update && \
     nftables &&\
     rm -rf /var/cache/apk/*
 
-COPY dnsmasq.conf /
-COPY nftables.conf /
-
-COPY rootfs /
 
 # COPY run.sh /
 # RUN chmod a+x /run.sh
@@ -33,3 +31,8 @@ HEALTHCHECK --interval=30s --timeout=5s --retries=2 --start-period=15s  CMD heal
 # CMD [ "/run.sh" ]
 
 
+
+LABEL \
+    org.opencontainers.image.title="ha dnsmasq by zqsd" \
+    org.opencontainers.image.description="dnsmasq to fit my need" \
+    org.opencontainers.image.source="https://github.com/zqsd/ha-dnsmasq"
