@@ -25,11 +25,11 @@ COPY nftables.conf /
 
 COPY rootfs /
 
-COPY run.sh /
-RUN chmod a+x /run.sh
+# COPY run.sh /
+# RUN chmod a+x /run.sh
 
 HEALTHCHECK --interval=30s --timeout=5s --retries=2 --start-period=15s  CMD healthcheck
 
-CMD [ "/run.sh" ]
+# CMD [ "/run.sh" ]
 
 

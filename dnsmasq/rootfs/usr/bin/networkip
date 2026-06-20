@@ -1,0 +1,17 @@
+#! /usr/bin/env bash
+
+mask=${1##*/}
+addr=${1%/*}
+t=$((32 - mask))
+bits=$(( 0xffffffff << t &0xffffffff ))
+IFS='.' read -r a b c d <<< "$addr"
+
+ip=$(( (a<<24) | (b<<16) | (c<<8) | d ))
+network=$(( ip & bits ))
+
+printf "%d.%d.%d.%d/%d\n" \
+    $(( (network >> 24) & 255 )) \
+    $(( (network >> 16) & 255 )) \
+    $(( (network >> 8 ) & 255 )) \
+    $(( network & 255 )) \
+    "$mask"

@@ -1,0 +1,237 @@
+#!/command/with-contenv bashio
+# shellcheck shell=bash
+
+LOG_LVL="$(bashio::config 'log_level')"
+bashio::log.level "${LOG_LVL}"
+
+clean_nftables(){
+    nft delete table ip haap_zqsd 2>/dev/null || true
+    nft delete table inet filter_haap_zqsd 2>/dev/null || true
+    # if  is_masquerading_enabled; then
+    #     iptables-nft -t nat -D POSTROUTING -o "$WANFACE" -j MASQUERADE -m comment --comment "ap-addon-inet"
+    # fi
+    # if is_forwarding_enabled; then
+    #     iptables-nft -D FORWARD -i "$IFACE" -o "$WANFACE" -j ACCEPT -m comment --comment "ap-addon-inet"
+    #     iptables-nft -D FORWARD -i "$WANFACE" -o "$IFACE" -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT -m comment --comment "ap-addon-inet"
+    # fi
+    unset_iptables
+}
+CLEANED_UP=false
+# SIGTERM-handler this funciton will be executed when the container receives the SIGTERM signal (when stopping)
+term_handler(){
+    if $CLEANED_UP; then
+        return
+    fi
+    CLEANED_UP=true
+	bashio::log.warning "Stopping addon"
+    bashio::log.warning "cleanup"
+    killall dnsmasq 2>/dev/null || true
+
+    clean_nftables
+
+    nmcli connection delete $CONN_NAME 2>/dev/null || true
+
+	exit 0
+}
+
+debug_file() {
+    local file="$1"
+
+    if [ ! -f "$file" ]; then
+        bashio::log.error "File not found: $file"
+        return
+    fi
+
+    bashio::log.info "===== $file ====="
+
+    while IFS= read -r line; do
+        bashio::log.info "$line"
+    done < "$file"
+}
+
+dry_run(){
+    bashio::log.info  "start dry run, make sure to enable debug logs"
+    config_dnsmasq
+    debug_file /dnsmasq.conf
+    exit 0
+
+}
+
+# cidr2mask(){
+#     local prefix=$1
+#     local shift=$(( 32 - prefix ))
+#     local bits
+#     # start with 32 bits to 1, shift left to match the /24 , trim extra bits with mask so it stay 32bits
+#     bits=$(( 0xffffffff << shift & 0xffffffff ))
+
+#     printf "%d.%d.%d.%d\n" \
+#         $(( (bits >> 24) & 0xff )) \
+#         $(( (bits >> 16) & 0xff )) \
+#         $(( (bits >> 8)  & 0xff )) \
+#         $(( bits & 0xff ))
+# }
+
+IP_CIDR="$(bashio::config 'ip_cidr')"
+CHANNEL=6
+CONN_NAME=MatterAP-addon
+SSID="$(bashio::config 'ssid')"
+PASS="$(bashio::config 'password')"
+IFACE="$(bashio::config 'interface')"
+WANFACE=end0
+if bashio::config.true 'hidden'; then
+    HIDDEN=yes
+else
+    HIDDEN=no
+fi
+DRY_RUN="$(bashio::config 'dry_run' false)"
+
+IPTABLE_NAME=ZQSD_DNSMASQ_TABLE
+DNS_SERVER="$(bashio::config 'dns_server')"
+PERSISTANCE_FILE=/data/matter_access_point_uuid
+nmcli_setup(){
+    if [[ -f $PERSISTANCE_FILE ]];then
+        nmcli connection delete "$(< $PERSISTANCE_FILE)" 2>/dev/null || true
+    fi
+        nmcli connection delete $CONN_NAME 2>/dev/null || true
+    	nmcli connection add type wifi ifname "$IFACE" con-name "$CONN_NAME" autoconnect yes ssid "$SSID" \
+		802-11-wireless.mode ap \
+		802-11-wireless.band bg \
+		802-11-wireless.channel "$CHANNEL" \
+		802-11-wireless.hidden "$HIDDEN" \
+        802-11-wireless.powersave 2 \
+		wifi-sec.key-mgmt wpa-psk \
+		wifi-sec.psk "$PASS" \
+		wifi-sec.proto rsn \
+		wifi-sec.pairwise ccmp \
+		wifi-sec.group ccmp \
+        ipv4.method manual \
+        ipv4.never-default yes \
+        ipv4.addresses "$IP_CIDR" \
+        ipv6.method manual \
+        ipv6.never-default yes \
+        ipv6.addresses fd44:44::1/64
+
+        nmcli -g connection.uuid connection show $CONN_NAME >$PERSISTANCE_FILE
+}
+
+
+bashio::log.info "Starting addon"
+# Setup signal handlers
+trap 'term_handler' SIGTERM
+trap 'term_handler' EXIT
+
+if bashio::config.true 'dry_run';then
+    dry_run
+fi
+
+bashio::log.info "## setup nmcli"
+nmcli_setup
+
+is_masquerading_enabled() {
+    iptables-nft -t nat -C POSTROUTING -o "$WANFACE" -j MASQUERADE -m comment --comment "ap-addon-inet" 2>/dev/null
+}
+
+is_forwarding_enabled() {
+    iptables-nft -C FORWARD -i "$IFACE" -o "$WANFACE" -j ACCEPT -m comment --comment "ap-addon-inet" 2>/dev/null
+}
+
+set_iptables(){
+
+    # Create chain if it doesn't exist
+    iptables -N $IPTABLE_NAME  2>/dev/null || true
+
+    # Clear only our chain
+    iptables -F $IPTABLE_NAME
+
+    # Ensure DOCKER-USER jumps to our chain exactly once
+    iptables -C DOCKER-USER -j $IPTABLE_NAME  2>/dev/null || \
+    iptables -A DOCKER-USER -j $IPTABLE_NAME
+
+    # Allow AP clients to reach the host itself
+    # iptables -I DOCKER-USER 1 -s 192.168.99.0/24 -d 192.168.1.1 -j ACCEPT
+
+    # Block AP clients from reaching the main LAN
+    iptables -A $IPTABLE_NAME  \
+        -s 192.168.99.0/24 \
+        -d 192.168.1.0/24 \
+        -j DROP
+
+    # Allow AP clients to reach the Internet
+    iptables -A $IPTABLE_NAME  \
+        -i "$IFACE" \
+        -o "$WANFACE" \
+        -j ACCEPT
+
+    # Allow return traffic
+    iptables -A $IPTABLE_NAME  \
+        -i "$WANFACE" \
+        -o "$IFACE" \
+        -m conntrack --ctstate RELATED,ESTABLISHED \
+        -j ACCEPT
+
+    # NAT AP clients to the Internet
+    iptables -t nat -A POSTROUTING -s 192.168.99.0/24 -o "$WANFACE" -j MASQUERADE
+}
+unset_iptables(){
+
+    # Remove jump from DOCKER-USER
+    iptables -D DOCKER-USER -j $IPTABLE_NAME  2>/dev/null || true
+
+    # Remove all rules in our chain
+    iptables -F $IPTABLE_NAME  2>/dev/null || true
+
+    # Delete the chain itself ##refuse to be deleted if still linked
+    iptables -X $IPTABLE_NAME  2>/dev/null || true
+
+    iptables -t nat -D POSTROUTING -s 192.168.99.0/24 -o "$WANFACE" -j MASQUERADE
+}
+
+if bashio::config.true 'enable_nftables';then
+    bashio::log.info "## Starting nftables"
+    # clean_nftables
+    sed -i \
+		-e "s/wlan0/$IFACE/g" \
+        -e "s/end0/$WANFACE/g" \
+        /nftables.conf
+    # nft -f /nftables.conf
+    # nft list ruleset
+    # if ! is_masquerading_enabled; then
+    #     iptables-nft -t nat -A POSTROUTING -o "$WANFACE" -j MASQUERADE -m comment --comment "ap-addon-inet"
+    # fi
+    # if ! is_forwarding_enabled; then
+    #     iptables-nft -A FORWARD -i "$IFACE" -o "$WANFACE" -j ACCEPT -m comment --comment "ap-addon-inet"
+    #     iptables-nft -A FORWARD -i "$WANFACE" -o "$IFACE" -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT -m comment --comment "ap-addon-inet"
+    # fi
+    set_iptables
+fi
+
+if bashio::config.true 'enable_dns';then
+    bashio::log.info "## Starting dnsmasq daemon"
+
+    if [[ $IFACE != "wlan0" ]];then
+        bashio::log.info "## rename interface "
+        sed -i \
+            -e "s/wlan0/$IFACE/g" /dnsmasq.conf
+    fi
+    if bashio::config.true 'override_dns';then
+        sed -i \
+            -e "s/dhcp-option=option:dns-server,192.168.99.1/dhcp-option=option:dns-server,${DNS_SERVER}/g" /dnsmasq.conf
+    fi
+    printf "\nserver=%s\n" "${DNS_SERVER}" >>/dnsmasq.conf
+    sleep 5
+    cat /dnsmasq.conf
+    if bashio::debug ;then
+        dnsmasq --no-daemon --log-queries -C /dnsmasq.conf
+    else
+        dnsmasq -C /dnsmasq.conf
+    fi
+fi
+bashio::log.info "setup finished, sleep till the end of the world ....."
+if bashio::config.true 'spy_network';then
+    tcpdump -i "${IFACE}" -n \
+    'not arp and not icmp and not icmp6 and not ether proto 0x888e and not (ip6 and net fe80::/10) and not port 5353 and (tcp or udp)'
+    # tcpdump -i "${IFACE}"
+fi
+sleep infinity &
+wait $!
+
