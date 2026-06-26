@@ -81,7 +81,9 @@ PASS="$(bashio::config 'password')"
 IFACE="$(bashio::config 'interface')"
 WANFACE=$(ip route show default | awk '{print $5}')
 LAN_NETWORK=$(networkip "$IP_CIDR")
-WAN_NETWORK=$(networkip "$(ip route show default | awk '{print $3}')")
+WAN_CIDR=$(ip -4 addr show dev "$(ip route show default | awk '{print $5}')" \
+    | awk '/inet / {print $2}')
+WAN_NETWORK=$(networkip "$WAN_CIDR")
 if bashio::config.true 'hidden'; then
     HIDDEN=yes
 else
