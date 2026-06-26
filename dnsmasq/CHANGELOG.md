@@ -1,5 +1,8 @@
 # Changelog
 
+## [0.1.17] 2026-06-26
+use tempio to generate the dnsmasq config
+
 ## [0.1.16] 2026-06-19
 healcheck and persistance test
 
