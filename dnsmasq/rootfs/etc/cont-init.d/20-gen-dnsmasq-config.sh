@@ -2,7 +2,8 @@
 # shellcheck shell=bash
 
 #TODO send extra data for /24 to 255.255.255.0
-DHCP_RANGE_MASK=cidr2mask "$(bashio::config 'ip_cidr')"
+IP="$(bashio::config 'ip_cidr')"
+DHCP_RANGE_MASK=cidr2mask ${IP: -2}
 
 # jq --arg mask "$DHCP_RANGE_MASK" \
 #   '.netmask = $mask' \
