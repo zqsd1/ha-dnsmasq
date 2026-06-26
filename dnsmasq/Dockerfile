@@ -2,8 +2,8 @@ ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base:3.23
 FROM $BUILD_FROM
 
 
-COPY dnsmasq.conf /
-COPY nftables.conf /
+# COPY dnsmasq.conf /
+# COPY nftables.conf /
 
 COPY rootfs /
 # RUN chmod a+x /etc/cont-init.d/10-test.sh
