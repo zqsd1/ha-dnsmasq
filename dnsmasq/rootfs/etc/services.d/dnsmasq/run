@@ -4,6 +4,7 @@
 LOG_LVL="$(bashio::config 'log_level')"
 bashio::log.level "${LOG_LVL}"
 
+#deprecated
 clean_nftables(){
     nft delete table ip haap_zqsd 2>/dev/null || true
     nft delete table inet filter_haap_zqsd 2>/dev/null || true
@@ -16,6 +17,7 @@ clean_nftables(){
     # fi
     unset_iptables
 }
+
 CLEANED_UP=false
 # SIGTERM-handler this funciton will be executed when the container receives the SIGTERM signal (when stopping)
 term_handler(){
@@ -77,22 +79,24 @@ CONN_NAME=MatterAP-addon
 SSID="$(bashio::config 'ssid')"
 PASS="$(bashio::config 'password')"
 IFACE="$(bashio::config 'interface')"
-WANFACE=end0
+WANFACE=$(ip route show default | awk '{print $5}')
+LAN_NETWORK=$(networkip "$IP_CIDR")
+WAN_NETWORK=$(networkip "$(ip route show default | awk '{print $3}')")
 if bashio::config.true 'hidden'; then
     HIDDEN=yes
 else
     HIDDEN=no
 fi
-DRY_RUN="$(bashio::config 'dry_run' false)"
 
 IPTABLE_NAME=ZQSD_DNSMASQ_TABLE
 DNS_SERVER="$(bashio::config 'dns_server')"
 PERSISTANCE_FILE=/data/matter_access_point_uuid
+
 nmcli_setup(){
     if [[ -f $PERSISTANCE_FILE ]];then
         nmcli connection delete "$(< $PERSISTANCE_FILE)" 2>/dev/null || true
     fi
-        nmcli connection delete $CONN_NAME 2>/dev/null || true
+        # nmcli connection delete $CONN_NAME 2>/dev/null || true
     	nmcli connection add type wifi ifname "$IFACE" con-name "$CONN_NAME" autoconnect yes ssid "$SSID" \
 		802-11-wireless.mode ap \
 		802-11-wireless.band bg \
@@ -115,22 +119,11 @@ nmcli_setup(){
 }
 
 
-bashio::log.info "Starting addon"
-# Setup signal handlers
-trap 'term_handler' SIGTERM
-trap 'term_handler' EXIT
-
-if bashio::config.true 'dry_run';then
-    dry_run
-fi
-
-bashio::log.info "## setup nmcli"
-nmcli_setup
-
+#deprecated
 is_masquerading_enabled() {
     iptables-nft -t nat -C POSTROUTING -o "$WANFACE" -j MASQUERADE -m comment --comment "ap-addon-inet" 2>/dev/null
 }
-
+#deprecated
 is_forwarding_enabled() {
     iptables-nft -C FORWARD -i "$IFACE" -o "$WANFACE" -j ACCEPT -m comment --comment "ap-addon-inet" 2>/dev/null
 }
@@ -152,8 +145,8 @@ set_iptables(){
 
     # Block AP clients from reaching the main LAN
     iptables -A $IPTABLE_NAME  \
-        -s 192.168.99.0/24 \
-        -d 192.168.1.0/24 \
+        -s "$LAN_NETWORK" \
+        -d "$WAN_NETWORK" \
         -j DROP
 
     # Allow AP clients to reach the Internet
@@ -170,7 +163,7 @@ set_iptables(){
         -j ACCEPT
 
     # NAT AP clients to the Internet
-    iptables -t nat -A POSTROUTING -s 192.168.99.0/24 -o "$WANFACE" -j MASQUERADE
+    iptables -t nat -A POSTROUTING -s "$LAN_NETWORK" -o "$WANFACE" -j MASQUERADE
 }
 unset_iptables(){
 
@@ -183,16 +176,16 @@ unset_iptables(){
     # Delete the chain itself ##refuse to be deleted if still linked
     iptables -X $IPTABLE_NAME  2>/dev/null || true
 
-    iptables -t nat -D POSTROUTING -s 192.168.99.0/24 -o "$WANFACE" -j MASQUERADE
+    iptables -t nat -D POSTROUTING -s "$LAN_NETWORK" -o "$WANFACE" -j MASQUERADE
 }
 
 if bashio::config.true 'enable_nftables';then
     bashio::log.info "## Starting nftables"
     # clean_nftables
-    sed -i \
-		-e "s/wlan0/$IFACE/g" \
-        -e "s/end0/$WANFACE/g" \
-        /nftables.conf
+    # sed -i \
+	# 	-e "s/wlan0/$IFACE/g" \
+    #     -e "s/end0/$WANFACE/g" \
+    #     /nftables.conf
     # nft -f /nftables.conf
     # nft list ruleset
     # if ! is_masquerading_enabled; then
@@ -205,34 +198,69 @@ if bashio::config.true 'enable_nftables';then
     set_iptables
 fi
 
-if bashio::config.true 'enable_dns';then
-    bashio::log.info "## Starting dnsmasq daemon"
+main(){
+    bashio::log.info "Starting addon"
+    # Setup signal handlers
+    trap 'term_handler' SIGTERM
+    trap 'term_handler' EXIT
 
-    if [[ $IFACE != "wlan0" ]];then
-        bashio::log.info "## rename interface "
-        sed -i \
-            -e "s/wlan0/$IFACE/g" /dnsmasq.conf
+    if bashio::config.true 'dry_run';then
+        dry_run
     fi
-    if bashio::config.true 'override_dns';then
-        sed -i \
-            -e "s/dhcp-option=option:dns-server,192.168.99.1/dhcp-option=option:dns-server,${DNS_SERVER}/g" /dnsmasq.conf
-        printf "\nport=0\n">> /dnsmasq.conf
-    fi
-    printf "\nserver=%s\n" "${DNS_SERVER}" >>/dnsmasq.conf
-    sleep 5
-    cat /dnsmasq.conf
-    if bashio::debug ;then
-        dnsmasq --no-daemon --log-queries -C /dnsmasq.conf
-    else
-        dnsmasq -C /dnsmasq.conf
-    fi
-fi
-bashio::log.info "setup finished, sleep till the end of the world ....."
-if bashio::config.true 'spy_network';then
-    tcpdump -i "${IFACE}" -n \
-    'not arp and not icmp and not icmp6 and not ether proto 0x888e and not (ip6 and net fe80::/10) and not port 5353 and (tcp or udp)'
-    # tcpdump -i "${IFACE}"
-fi
-sleep infinity &
-wait $!
 
+    bashio::log.info "## setup nmcli"
+    nmcli_setup
+
+    if bashio::config.true 'enable_nftables';then
+    bashio::log.info "## Starting nftables"
+    # clean_nftables
+    # sed -i \
+	# 	-e "s/wlan0/$IFACE/g" \
+    #     -e "s/end0/$WANFACE/g" \
+    #     /nftables.conf
+    # nft -f /nftables.conf
+    # nft list ruleset
+    # if ! is_masquerading_enabled; then
+    #     iptables-nft -t nat -A POSTROUTING -o "$WANFACE" -j MASQUERADE -m comment --comment "ap-addon-inet"
+    # fi
+    # if ! is_forwarding_enabled; then
+    #     iptables-nft -A FORWARD -i "$IFACE" -o "$WANFACE" -j ACCEPT -m comment --comment "ap-addon-inet"
+    #     iptables-nft -A FORWARD -i "$WANFACE" -o "$IFACE" -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT -m comment --comment "ap-addon-inet"
+    # fi
+    set_iptables
+    fi
+
+    if bashio::config.true 'enable_dns';then
+        bashio::log.info "## Starting dnsmasq daemon"
+
+        # if [[ $IFACE != "wlan0" ]];then
+        #     bashio::log.info "## rename interface "
+        #     sed -i \
+        #         -e "s/wlan0/$IFACE/g" /dnsmasq.conf
+        # fi
+        # if bashio::config.true 'override_dns';then
+        #     sed -i \
+        #         -e "s/dhcp-option=option:dns-server,192.168.99.1/dhcp-option=option:dns-server,${DNS_SERVER}/g" /dnsmasq.conf
+        #     printf "\nport=0\n">> /dnsmasq.conf
+        # fi
+        # printf "\nserver=%s\n" "${DNS_SERVER}" >>/dnsmasq.conf
+        sleep 5
+        cat /dnsmasq.conf
+        if bashio::debug ;then
+            dnsmasq --no-daemon --log-queries -C /dnsmasq.conf
+        else
+            dnsmasq -C /dnsmasq.conf
+        fi
+    fi
+    bashio::log.info "setup finished, sleep till the end of the world ....."
+    if bashio::config.true 'spy_network';then
+        tcpdump -i "${IFACE}" -n \
+        'not arp and not icmp and not icmp6 and not ether proto 0x888e and not (ip6 and net fe80::/10) and not port 5353 and (tcp or udp)'
+        # tcpdump -i "${IFACE}"
+    fi
+    sleep infinity &
+    wait $!
+
+}
+
+main
