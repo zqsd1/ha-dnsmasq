@@ -79,7 +79,8 @@ CONN_NAME=MatterAP-addon
 SSID="$(bashio::config 'ssid')"
 PASS="$(bashio::config 'password')"
 IFACE="$(bashio::config 'interface')"
-WANFACE=$(ip route show default | awk '{print $5}')
+# WANFACE=$(ip route show default | awk '{print $5}')
+WANFACE=end0
 LAN_NETWORK=$(networkip "$IP_CIDR")
 # WAN_CIDR=$(ip -4 addr show dev "$WANFACE" \
 #     | awk '/inet / {print $2}')
