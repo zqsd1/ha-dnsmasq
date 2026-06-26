@@ -1,7 +1,6 @@
 #! /usr/bin/env bash
 prefix=$1
 shift=$(( 32 - prefix ))
-bits
 # start with 32 bits to 1, shift left to match the /24 , trim extra bits with mask so it stay 32bits
 bits=$(( 0xffffffff << shift & 0xffffffff ))
 
