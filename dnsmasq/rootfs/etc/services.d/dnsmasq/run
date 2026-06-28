@@ -180,14 +180,25 @@ set_iptables(){
 
     ip6tables -A $IPTABLE_NAME -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
-    # allow internet (IPv6 WAN)
-    ip6tables -A $IPTABLE_NAME -i "$IFACE" -o "$WANFACE" -j ACCEPT
-
-    # block LAN
-    ip6tables -A $IPTABLE_NAME  \
-        -s "fd44:44::/64" \
+    # 2. block LAN → main LAN (isolation rule FIRST)
+    ip6tables -A $IPTABLE_NAME \
+        -s fd44:44::/64 \
         -d "$WAN_IP6" \
         -j DROP
+
+    # 3. allow everything else from your WLAN network
+    ip6tables -A $IPTABLE_NAME \
+        -s fd44:44::/64 \
+        -j ACCEPT
+
+    # allow internet (IPv6 WAN)
+    # ip6tables -A $IPTABLE_NAME -i "$IFACE" -o "$WANFACE" -j ACCEPT
+
+    # # block LAN
+    # ip6tables -A $IPTABLE_NAME  \
+    #     -s "fd44:44::/64" \
+    #     -d "$WAN_IP6" \
+    #     -j DROP
 
     # # ip6tables -A FORWARD -p icmpv6 -j ACCEPT
     # ip6tables -A IPTABLE_NAME  -p icmpv6 -j ACCEPT
