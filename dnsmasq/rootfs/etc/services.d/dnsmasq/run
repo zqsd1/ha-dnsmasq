@@ -59,19 +59,6 @@ dry_run(){
 
 }
 
-# cidr2mask(){
-#     local prefix=$1
-#     local shift=$(( 32 - prefix ))
-#     local bits
-#     # start with 32 bits to 1, shift left to match the /24 , trim extra bits with mask so it stay 32bits
-#     bits=$(( 0xffffffff << shift & 0xffffffff ))
-
-#     printf "%d.%d.%d.%d\n" \
-#         $(( (bits >> 24) & 0xff )) \
-#         $(( (bits >> 16) & 0xff )) \
-#         $(( (bits >> 8)  & 0xff )) \
-#         $(( bits & 0xff ))
-# }
 
 IP_CIDR="$(bashio::config 'ip_cidr')"
 CHANNEL=6
@@ -81,6 +68,7 @@ PASS="$(bashio::config 'password')"
 IFACE="$(bashio::config 'interface')"
 # WANFACE=$(ip route show default | awk '{print $5}')
 WANFACE=end0
+WANFACE=${WANFACE%%$'\n'*}
 LAN_NETWORK=$(networkip "$IP_CIDR")
 # WAN_CIDR=$(ip -4 addr show dev "$WANFACE" \
 #     | awk '/inet / {print $2}')
@@ -176,6 +164,31 @@ set_iptables(){
 
     # NAT AP clients to the Internet
     iptables -t nat -A POSTROUTING -s "$LAN_NETWORK" -o "$WANFACE" -j MASQUERADE
+
+
+    ####IPv6#####
+    ip6tables -N $IPTABLE_NAME  2>/dev/null || true
+
+    # Clear only our chain
+    ip6tables -F $IPTABLE_NAME
+    ip6tables -C DOCKER-USER -j $IPTABLE_NAME  2>/dev/null || \
+    ip6tables -A DOCKER-USER -j $IPTABLE_NAME
+
+    ip6tables -A $IPTABLE_NAME -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+    # allow internet (IPv6 WAN)
+    ip6tables -A $IPTABLE_NAME -i "$IFACE" -o "$WANFACE" -j ACCEPT
+
+    # block LAN
+    ip6tables -A $IPTABLE_NAME  \
+        -s "$LAN_NETWORK" \
+        -d "$WAN_NETWORK" \
+        -j DROP
+
+    # # ip6tables -A FORWARD -p icmpv6 -j ACCEPT
+    # ip6tables -A IPTABLE_NAME  -p icmpv6 -j ACCEPT
+    # # INPUT (router itself)
+    # ip6tables -A INPUT -p icmpv6 -j ACCEPT
 }
 unset_iptables(){
 
@@ -189,6 +202,19 @@ unset_iptables(){
     iptables -X $IPTABLE_NAME  2>/dev/null || true
 
     iptables -t nat -D POSTROUTING -s "$LAN_NETWORK" -o "$WANFACE" -j MASQUERADE
+
+    ####IPv6#####
+    # Remove jump from DOCKER-USER
+    ip6tables -D DOCKER-USER -j $IPTABLE_NAME  2>/dev/null || true
+
+    # Remove all rules in our chain
+    ip6tables -F $IPTABLE_NAME  2>/dev/null || true
+
+    # Delete the chain itself ##refuse to be deleted if still linked
+    ip6tables -X $IPTABLE_NAME  2>/dev/null || true
+
+    # ip6tables -D INPUT -p icmpv6 -j ACCEPT
+
 }
 
 main(){
