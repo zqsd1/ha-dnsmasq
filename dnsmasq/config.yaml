@@ -27,6 +27,7 @@ options:
   dns_server: 1.1.1.1
   override_dns: true
   spy_network: true
+  try_ip6: false
 schema:
   dry_run: bool
   log_level: list(trace|debug|info|notice|warning|error|fatal)?
@@ -40,3 +41,4 @@ schema:
   dns_server: str
   override_dns: bool
   spy_network: bool
+  try_ip6: bool

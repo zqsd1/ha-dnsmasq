@@ -79,6 +79,8 @@ if bashio::config.true 'hidden'; then
 else
     HIDDEN=no
 fi
+         
+WAN_IP6=$( ip -6 addr show dev "$WANFACE" | awk '/inet6/ {print $2}' | cut -d/ -f1 | grep '^fd')
 
 #debug var
 bashio::log.info "IFACE: $IFACE"
@@ -86,6 +88,7 @@ bashio::log.info "WANFACE: $WANFACE"
 bashio::log.info "LAN_NETWORK: $LAN_NETWORK"
 bashio::log.info "WAN_CIDR: $WAN_CIDR"
 bashio::log.info "WAN_NETWORK: $WAN_NETWORK"
+bashio::log.info "WAN_IP6: $WAN_IP6"
 
 
 IPTABLE_NAME=ZQSD_DNSMASQ_TABLE
@@ -167,6 +170,7 @@ set_iptables(){
 
 
     ####IPv6#####
+    if bashio::config.true 'try_ip6';then
     ip6tables -N $IPTABLE_NAME  2>/dev/null || true
 
     # Clear only our chain
@@ -181,14 +185,15 @@ set_iptables(){
 
     # block LAN
     ip6tables -A $IPTABLE_NAME  \
-        -s "$LAN_NETWORK" \
-        -d "$WAN_NETWORK" \
+        -s "fd44:44::/64" \
+        -d "$WAN_IP6" \
         -j DROP
 
     # # ip6tables -A FORWARD -p icmpv6 -j ACCEPT
     # ip6tables -A IPTABLE_NAME  -p icmpv6 -j ACCEPT
     # # INPUT (router itself)
     # ip6tables -A INPUT -p icmpv6 -j ACCEPT
+    fi
 }
 unset_iptables(){
 
