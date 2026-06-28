@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.18] 2026-06-26
+add config for ipv6
+try to make the ipv6 work by changing the ra-param, if it use just wlan,high it should be able to use internet
+
 ## [0.1.17] 2026-06-26
 use tempio to generate the dnsmasq config
 
