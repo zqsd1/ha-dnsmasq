@@ -117,7 +117,7 @@ nmcli_setup(){
         ipv4.addresses "$IP_CIDR" \
         ipv6.method auto \
         ipv6.never-default yes \
-        ipv6.addresses "$IP6_PREFIX"::1/64
+        ipv6.addresses fd44:44::/64::1/64
 
         nmcli -g connection.uuid connection show $CONN_NAME >$PERSISTANCE_FILE
 }
@@ -195,7 +195,7 @@ set_iptables(){
             -s fd44:44::/64 \
             -j ACCEPT
         bashio::log.info "passed ip6 rule 3"
-        ip6tables -t nat -A POSTROUTING -s "$IP6_PREFIX"/64 -o "$WANFACE" -j MASQUERADE
+        ip6tables -t nat -A POSTROUTING -s fd44:44::/64 -o "$WANFACE" -j MASQUERADE
         bashio::log.info "passed ip6 rule nat"
 
 
@@ -238,7 +238,7 @@ unset_iptables(){
     ip6tables -X $IPTABLE_NAME  2>/dev/null || true
 
     # ip6tables -D INPUT -p icmpv6 -j ACCEPT
-    ip6tables -t nat -D POSTROUTING -s "$IP6_PREFIX" -o "$WANFACE" -j MASQUERADE 2>/dev/null || true
+    ip6tables -t nat -D POSTROUTING -s fd44:44::/64 -o "$WANFACE" -j MASQUERADE 2>/dev/null || true
 
 
 }
