@@ -183,7 +183,7 @@ set_iptables(){
         ip6tables -A DOCKER-USER -j $IPTABLE_NAME
 
         ip6tables -A $IPTABLE_NAME -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
-        ip6tables -A $IPTABLE_NAME -p icmp6 -j ACCEPT
+        ip6tables -A $IPTABLE_NAME -p ipv6-icmp -j ACCEPT
         # 2. block LAN → main LAN (isolation rule FIRST)
         ip6tables -A $IPTABLE_NAME \
             -s fd44:44::/64 \
