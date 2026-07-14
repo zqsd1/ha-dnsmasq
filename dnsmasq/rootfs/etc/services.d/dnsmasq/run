@@ -81,6 +81,7 @@ else
 fi
          
 WAN_IP6=$( ip -6 addr show dev "$WANFACE" | awk '/inet6/ {print $2}' | cut -d/ -f1 | grep '^fd')
+IP6_PREFIX=fd44:44
 
 #debug var
 bashio::log.info "IFACE: $IFACE"
@@ -116,7 +117,7 @@ nmcli_setup(){
         ipv4.addresses "$IP_CIDR" \
         ipv6.method auto \
         ipv6.never-default yes \
-        ipv6.addresses fd44:44::1/64
+        ipv6.addresses "$IP6_PREFIX"::1/64
 
         nmcli -g connection.uuid connection show $CONN_NAME >$PERSISTANCE_FILE
 }
@@ -171,39 +172,44 @@ set_iptables(){
 
     ####IPv6#####
     if bashio::config.true 'try_ip6';then
-    ip6tables -N $IPTABLE_NAME  2>/dev/null || true
+        bashio::log.info "enabling ipv6 iptables ruleset"
 
-    # Clear only our chain
-    ip6tables -F $IPTABLE_NAME
-    ip6tables -C DOCKER-USER -j $IPTABLE_NAME  2>/dev/null || \
-    ip6tables -A DOCKER-USER -j $IPTABLE_NAME
+        ip6tables -N $IPTABLE_NAME  2>/dev/null || true
 
-    ip6tables -A $IPTABLE_NAME -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+        # Clear only our chain
+        ip6tables -F $IPTABLE_NAME
 
-    # 2. block LAN → main LAN (isolation rule FIRST)
-    ip6tables -A $IPTABLE_NAME \
-        -s fd44:44::/64 \
-        -d "$WAN_IP6" \
-        -j DROP
+        ip6tables -C DOCKER-USER -j $IPTABLE_NAME  2>/dev/null || \
+        ip6tables -A DOCKER-USER -j $IPTABLE_NAME
 
-    # 3. allow everything else from your WLAN network
-    ip6tables -A $IPTABLE_NAME \
-        -s fd44:44::/64 \
-        -j ACCEPT
+        ip6tables -A $IPTABLE_NAME -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+        ip6tables -A $IPTABLE_NAME -p icmp6 -j ACCEPT
+        # 2. block LAN → main LAN (isolation rule FIRST)
+        ip6tables -A $IPTABLE_NAME \
+            -s fd44:44::/64 \
+            -d "$WAN_IP6" \
+            -j DROP
 
-    # allow internet (IPv6 WAN)
-    # ip6tables -A $IPTABLE_NAME -i "$IFACE" -o "$WANFACE" -j ACCEPT
+        # 3. allow everything else from your WLAN network
+        ip6tables -A $IPTABLE_NAME \
+            -s fd44:44::/64 \
+            -j ACCEPT
 
-    # # block LAN
-    # ip6tables -A $IPTABLE_NAME  \
-    #     -s "fd44:44::/64" \
-    #     -d "$WAN_IP6" \
-    #     -j DROP
+        ip6tables -t nat -A POSTROUTING -s "$IP6_PREFIX" -o "$WANFACE" -j MASQUERADE
 
-    # # ip6tables -A FORWARD -p icmpv6 -j ACCEPT
-    # ip6tables -A IPTABLE_NAME  -p icmpv6 -j ACCEPT
-    # # INPUT (router itself)
-    # ip6tables -A INPUT -p icmpv6 -j ACCEPT
+        # allow internet (IPv6 WAN)
+        # ip6tables -A $IPTABLE_NAME -i "$IFACE" -o "$WANFACE" -j ACCEPT
+
+        # # block LAN
+        # ip6tables -A $IPTABLE_NAME  \
+        #     -s "fd44:44::/64" \
+        #     -d "$WAN_IP6" \
+        #     -j DROP
+
+        # # ip6tables -A FORWARD -p icmpv6 -j ACCEPT
+        # ip6tables -A IPTABLE_NAME  -p icmpv6 -j ACCEPT
+        # # INPUT (router itself)
+        # ip6tables -A INPUT -p icmpv6 -j ACCEPT
     fi
 }
 unset_iptables(){
@@ -230,6 +236,8 @@ unset_iptables(){
     ip6tables -X $IPTABLE_NAME  2>/dev/null || true
 
     # ip6tables -D INPUT -p icmpv6 -j ACCEPT
+    ip6tables -t nat -D POSTROUTING -s "$IP6_PREFIX" -o "$WANFACE" -j MASQUERADE 2>/dev/null || true
+
 
 }
 
