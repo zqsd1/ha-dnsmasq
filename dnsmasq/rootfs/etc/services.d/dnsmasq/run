@@ -195,7 +195,7 @@ set_iptables(){
             -s fd44:44::/64 \
             -j ACCEPT
 
-        ip6tables -t nat -A POSTROUTING -s "$IP6_PREFIX" -o "$WANFACE" -j MASQUERADE
+        ip6tables -t nat -A POSTROUTING -s "$IP6_PREFIX"/64 -o "$WANFACE" -j MASQUERADE
 
         # allow internet (IPv6 WAN)
         # ip6tables -A $IPTABLE_NAME -i "$IFACE" -o "$WANFACE" -j ACCEPT
