@@ -117,7 +117,7 @@ nmcli_setup(){
         ipv4.addresses "$IP_CIDR" \
         ipv6.method auto \
         ipv6.never-default yes \
-        ipv6.addresses fd44:44::/64::1/64
+        ipv6.addresses fd44:44::1/64
 
         nmcli -g connection.uuid connection show $CONN_NAME >$PERSISTANCE_FILE
 }
