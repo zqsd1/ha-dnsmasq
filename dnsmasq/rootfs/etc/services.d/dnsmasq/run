@@ -36,6 +36,34 @@ term_handler(){
 	exit 0
 }
 
+debug_dead_wifi(){
+    
+    while true; do
+        {
+            printf '%s ' "$(date -Is)"
+
+            printf 'link='
+            cat /sys/class/net/wlan0/operstate 2>/dev/null || printf 'MISSING'
+
+            printf ' carrier='
+            cat /sys/class/net/wlan0/carrier 2>/dev/null || printf '?'
+
+            printf ' ip='
+            ip -4 -o addr show wlan0 2>/dev/null |
+                awk '{print $4}' |
+                tr '\n' ','
+
+            printf ' nm='
+            nmcli -t -f DEVICE,STATE device status 2>/dev/null |
+                grep '^wlan0:' || printf 'unknown'
+
+            printf '\n'
+        }
+
+        sleep 5
+    done
+}
+
 debug_file() {
     local file="$1"
 
@@ -298,6 +326,10 @@ main(){
         fi
     fi
     bashio::log.info "setup finished, sleep till the end of the world ....."
+    if bashio::config.true "dead_wifi"; then
+        bashio::log.info "logging wifi info for when it dies"
+        debug_dead_wifi
+    fi
     if bashio::config.true 'spy_network';then
         tcpdump -i "${IFACE}" -n \
         'not arp and not icmp and not icmp6 and not ether proto 0x888e and not net fe80::/10 and not port 5353 and (tcp or udp)'

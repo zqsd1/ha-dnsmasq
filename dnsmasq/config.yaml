@@ -1,6 +1,6 @@
 ---
 name: dnsmasq by zqsd
-version: 0.1.18
+version: 0.1.19
 slug: dnsmasq.zqsd
 description: dnsmasq server because official one doesnt fit me
 arch: [armhf, armv7, aarch64, amd64, i386]
@@ -28,6 +28,7 @@ options:
   override_dns: true
   spy_network: true
   try_ip6: false
+  dead_wifi: false
 schema:
   dry_run: bool
   log_level: list(trace|debug|info|notice|warning|error|fatal)?
@@ -42,3 +43,4 @@ schema:
   override_dns: bool
   spy_network: bool
   try_ip6: bool
+  dead_wifi: bool
